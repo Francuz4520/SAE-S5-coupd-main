@@ -7,6 +7,8 @@ import HomeScreen from "./screens/Home";
 import PublishScreen from "./screens/Publish";
 import MessagesScreen from "./screens/Messages";
 import ProfileScreen from "./screens/Profile";
+import SplashScreen from './screens/SplashScreen';
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -73,7 +75,8 @@ const Tabs = () => {
 
 export default function Index() {
   return (
-    <Stack.Navigator initialRouteName="Home" screenOptions={{headerShown: false}}>
+    <Stack.Navigator initialRouteName="Splash" screenOptions={{headerShown: false}}>
+      <Stack.Screen name="Splash" component={SplashScreen}/>
       <Stack.Screen name="Home" component={Tabs}/>
     </Stack.Navigator>
   );
