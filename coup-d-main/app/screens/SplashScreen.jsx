@@ -4,7 +4,7 @@ import { Text, View, StyleSheet, Image } from "react-native";
 export default function SplashScreen({navigation}){
     useEffect(() => {
         setTimeout(() => {
-            navigation.navigate('Home')
+            navigation.navigate('Connection')
         }, 3000);
     }, []);
     return(
