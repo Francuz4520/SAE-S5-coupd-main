@@ -8,6 +8,24 @@ import PublishScreen from "./screens/Publish";
 import MessagesScreen from "./screens/Messages";
 import ProfileScreen from "./screens/Profile";
 import SplashScreen from './screens/SplashScreen';
+import Connection from './screens/Connection'
+import Registration from './screens/Registration'
+import RegistrationDetails from './screens/RegistrationDetails'
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCiMQX0w9x738U1bTYi75EaxncHe0BU_IY",
+  authDomain: "saecoupdmain.firebaseapp.com",
+  projectId: "saecoupdmain",
+  storageBucket: "saecoupdmain.firebasestorage.app",
+  messagingSenderId: "51236011687",
+  appId: "1:51236011687:web:355ca4439aaf49f430a582"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
 
 const Stack = createNativeStackNavigator();
@@ -77,6 +95,9 @@ export default function Index() {
   return (
     <Stack.Navigator initialRouteName="Splash" screenOptions={{headerShown: false}}>
       <Stack.Screen name="Splash" component={SplashScreen}/>
+      <Stack.Screen name="Connection" component={Connection}/>
+      <Stack.Screen name="Registration" component={Registration}/>
+      <Stack.Screen name="RegistrationDetails" component={RegistrationDetails}/>
       <Stack.Screen name="Home" component={Tabs}/>
     </Stack.Navigator>
   );
