@@ -1,12 +1,47 @@
-import {View, Image, StyleSheet, Text, Button, TextInput, Pressable, KeyboardAvoidingView} from "react-native"
+import {View, Image, StyleSheet, Text, Button, TextInput, Pressable, KeyboardAvoidingView, ScrollView} from "react-native"
 import { useState } from "react";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { Checkbox } from 'expo-checkbox';
+import { doc, setDoc, getFirestore } from "firebase/firestore"; 
+import { initializeApp } from "firebase/app";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function RegistrationScreen({navigation}){
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [errors, setErrors] = useState({})
+    const [lastname, setLastname] = useState("");
+    const [firstname, setFirstname] = useState("");
+    const [username, setUsername] = useState("");
+    const [show, setShow] = useState(false);
+    const [dateOfBirth, setDateOfBirth] = useState(null);
+    const [dateText, setDateText] = useState("");
+    const [city, setCity] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [errors, setErrors] = useState({});
 
+    const onChangeDate = (event, selectedDate) => {
+        setShow(false);
+
+        if (selectedDate) {
+            setDateText(selectedDate.toLocaleDateString())
+            setDateOfBirth(selectedDate);
+        }
+    };
+
+    function createDateWithText(text){
+        const parts = text.split("/");
+        if (parts.length === 3) {
+        const [day, month, year] = parts.map(Number);
+            if (day && month && year) {
+                const newDate = new Date(year, month - 1, day);
+                if (!isNaN(newDate)) {
+                    setDateOfBirth(newDate);
+                    return;
+                }
+            }
+        }
+        setDateOfBirth(null);
+    }
     const firebaseErrors ={
         "auth/email-already-in-use": "Cette adresse e-mail est déjà utilisée.",
         "auth/invalid-email": "L'adresse e-mail n'est pas valide.",
@@ -14,28 +49,97 @@ export default function RegistrationScreen({navigation}){
         "auth/password-does-not-meet-requirements": "Le mot de passe doit contenir au moins 8 caractères, une majuscule, un caractère spécial et un chiffre.",
     }
 
-    function handleSignup(){
+    async function handleSignup() {
         const auth = getAuth();
-        createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-            // Signed up 
+        const validationErrors = checkInputs()
+        if(Object.keys(validationErrors).length > 0){
+            setErrors(validationErrors)
+            return
+        }
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            console.log("Utilisateur créé " + user.email)
-            navigation.navigate("Home")
-        })
-        .catch((error) => {
-            let errors = {}
+
+            registerInformations(user.uid);
+
+            console.log("Utilisateur créé", user.email);
+            navigation.navigate("Home");
+
+        } catch (error) {
+            let errors = {};
             const errorCode = error.code;
-            const errorMessage = error.message;
-            console.log("Echec de création de l'utilisateur : " + errorCode + " => " + errorMessage)
-    
-            if(errorCode.includes("email")){errors.email = firebaseErrors[errorCode]}
-            if(errorCode.includes("password")){errors.password = firebaseErrors[errorCode]}
-            setErrors(errors); 
-        });
+            console.log(errorCode)
+            if (errorCode?.includes("email")) errors.email = firebaseErrors[errorCode];
+            if (errorCode?.includes("password")) errors.password = firebaseErrors[errorCode];
+
+            setErrors(errors);
+        }
     }
+
+    function checkInputs(){
+        console.log(username)
+        let validationErrors = {};
+
+        const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\-]+$/;
+        const cityRegex = /^([a-zA-Z\u0080-\u024F]+(?:. |-| |'))*[a-zA-Z\u0080-\u024F]*$/;
+        const phoneNumberRegex = /^0[1-9]\d{8}$/;
+        
+        if(firstname === ""){
+            validationErrors.firstname = "Le prénom doit être renseigné.";
+        }
+        else if (!nameRegex.test(firstname)) {
+            validationErrors.firstname = "Le prénom ne doit contenir que des lettres.";
+        }
+
+        if(lastname === ""){
+            validationErrors.lastname = "Le nom doit être renseigné.";
+        }
+        else if (!nameRegex.test(lastname)) {
+            validationErrors.lastname = "Le nom ne doit contenir que des lettres.";
+        }
+
+        if(username === ""){
+            validationErrors.username = "Le nom d'utilisateur doit être renseigné."
+        }
+        if(dateOfBirth === null || dateOfBirth > new Date()){
+            validationErrors.dateOfBirth = "La date de naissance n'est pas valide."
+        }
+        if(city === ""){
+            validationErrors.city = "La ville doit être renseignée."
+        }
+        else if(!cityRegex.test(city)){
+            validationErrors.city = "La ville ne doit contenir que des lettres, des espaces et des tirets."
+        }
+        if(phoneNumber !== "" && !phoneNumberRegex.test(phoneNumber)){
+            validationErrors.phoneNumber = "Le numéro de téléphone n'est pas valide."
+        }
+        return validationErrors;
+    }   
+
+    async function registerInformations(id) {
+        const firebaseConfig = {
+            apiKey: "AIzaSyCiMQX0w9x738U1bTYi75EaxncHe0BU_IY",
+            authDomain: "saecoupdmain.firebaseapp.com",
+            projectId: "saecoupdmain",
+            storageBucket: "saecoupdmain.firebasestorage.app",
+            messagingSenderId: "51236011687",
+            appId: "1:51236011687:web:355ca4439aaf49f430a582"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const fields = {firstname, lastname, username, dateOfBirth, city}
+        if(phoneNumber !== "") fields.phoneNumber = phoneNumber;
+                    
+        await setDoc(doc(db, "users", id), 
+            fields
+        );
+    }
+
+    
     return(
-        <KeyboardAvoidingView behavior="padding" style={styles.container}>
+        <ScrollView style={styles.container}>
            <View> 
             <Image style={styles.logo}source={require("../../assets/images/logo_coup-dmain.png")} />
             <Text style={styles.title}>Créer un compte</Text>
@@ -48,12 +152,58 @@ export default function RegistrationScreen({navigation}){
                 <View><Text style={{marginHorizontal: 10}}>OU</Text></View>
                 <View style={styles.line}></View>
             </View>
-            <Text>Email</Text>
-            <TextInput style={styles.input} value={email} onChangeText={setEmail}/>
+            <Text>Email<Text style={styles.mandatoryField}>*</Text></Text>
+            <TextInput style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none" inputMode="email"/>
             {errors.email && <Text style={styles.textError}>{errors.email}</Text>}
-            <Text>Mot de passe</Text>
-            <TextInput style={styles.input} value={password} onChangeText={setPassword} secureTextEntry/>
+            <Text>Mot de passe<Text style={styles.mandatoryField}>*</Text></Text>
+            <TextInput style={styles.input} value={password} onChangeText={setPassword} autoCapitalize="none" secureTextEntry/>
             {errors.password && <Text style={styles.textError}>{errors.password}</Text>}
+            <View> 
+                <Text>Nom<Text style={styles.mandatoryField}>*</Text></Text>
+                <TextInput style={styles.input} value={lastname} onChangeText={setLastname}/>
+                {errors.lastname && <Text style={styles.textError}>{errors.lastname}</Text>}
+                <Text>Prénom<Text style={styles.mandatoryField}>*</Text></Text>
+                <TextInput style={styles.input} value={firstname} onChangeText={setFirstname}/>
+                {errors.firstname && <Text style={styles.textError}>{errors.firstname}</Text>}
+                <Text>Nom d'utilisateur<Text style={styles.mandatoryField}>*</Text></Text>
+                <TextInput style={styles.input} value={username} onChangeText={setUsername} autoCapitalize="none"/>
+                {errors.username && <Text style={styles.textError}>{errors.username}</Text>}
+                <Text>Date de naissance<Text style={styles.mandatoryField}>*</Text></Text>
+                <View>
+                    <TextInput style={styles.input} value={dateText} onChangeText={ (text) => {
+                        setDateText(text);
+                        createDateWithText(text);
+                    }}/>
+                    <Pressable style={styles.iconContainer}onPress={() => setShow(true)}>
+                        <Image style={styles.icon} source={require("../../assets/icons/calendar.png")}></Image>
+                    </Pressable>
+                </View>
+                
+                {show && (
+                <DateTimePicker
+                    value={dateOfBirth ?? new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={onChangeDate}
+                />)}
+                
+                {errors.dateOfBirth && <Text style={styles.textError}>{errors.dateOfBirth}</Text>}
+                <Text>Ville<Text style={styles.mandatoryField}>*</Text></Text>
+                <TextInput style={styles.input} value={city} onChangeText={setCity}/>
+                {errors.city && <Text style={styles.textError}>{errors.city}</Text>}
+                <Text>Numéro de téléphone</Text>
+                <TextInput style={styles.input} value={phoneNumber} onChangeText={setPhoneNumber} inputMode="tel"/>
+                {errors.phoneNumber && <Text style={styles.textError}>{errors.phoneNumber}</Text>}
+                <View style={styles.blocCGU}>
+                    <Checkbox style={styles.checkBox}></Checkbox>
+                    <Text>J'accepte les </Text>
+                    <Pressable  >
+                        <Text style={styles.linkCGU}>conditions générales d'utilisation</Text>
+                    </Pressable>
+                </View>
+                
+                <Text style={styles.mandatoryFieldText}><Text style={styles.mandatoryField}>*</Text> Champs obligatoires</Text>
+            </View>
             <Pressable style={styles.btnConnection} onPress={handleSignup}>
                 <Text style={styles.btnConnectionText}>S'inscrire</Text>
             </Pressable>
@@ -62,14 +212,13 @@ export default function RegistrationScreen({navigation}){
                 <Text style={styles.linkCreateAccount}>Se connecter</Text>
             </Pressable>
             </View>
-        </KeyboardAvoidingView>
+        </ScrollView>
         
     );
 }
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: "center",
         paddingHorizontal: 40
     },
     logo:{
@@ -141,6 +290,34 @@ const styles = StyleSheet.create({
     textError: {
         color: "red",
         marginBottom: 10
+    },
+    checkBox:{
+        marginRight: 10
+    },
+    blocCGU: {
+        flexDirection: "row",
+    },
+    linkCGU:{
+        color: "#00BFFF",
+        textDecorationLine: "underline",
+        alignSelf: "center",
+        marginBottom: 10
+    },
+    mandatoryFieldText: {
+        alignSelf: "center",
+        marginBottom: 10
+    },
+    mandatoryField: {
+        color: "#ED0000"
+    },
+    iconContainer: {
+        position: "absolute",
+        alignSelf: "flex-end",
+        right: 3,
+        top: 5
+    },
+    icon: {
+        width: 34,
+        height: 34,
     }
-    
 });

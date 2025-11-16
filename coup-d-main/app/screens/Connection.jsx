@@ -12,7 +12,8 @@ export default function ConnectionScreen({navigation}){
         "auth/invalid-email": "L'adresse e-mail n'est pas valide.",
         "auth/missing-password": "Veuillez saisir un mot de passe.",
         "auth/wrong-password": "Mot de passe invalide",
-        "auth/invalid-credential" : "Email ou mot de passe incorrect."
+        "auth/invalid-credential" : "Email ou mot de passe incorrect.",
+        "auth/too-many-requests":"Tr"
         
     }
 
@@ -51,10 +52,10 @@ export default function ConnectionScreen({navigation}){
                 <View style={styles.line}></View>
             </View>
             <Text>Email</Text>
-            <TextInput style={styles.input} value={email} onChangeText={setEmail}/>
+            <TextInput style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none"/>
             {errors.email && <Text style={styles.textError}>{errors.email}</Text>}
             <Text>Mot de passe</Text>
-            <TextInput style={styles.input} value={password} onChangeText={setPassword} secureTextEntry/>
+            <TextInput style={styles.input} value={password} onChangeText={setPassword} autoCapitalize="none" secureTextEntry/>
             {errors.password && <Text style={styles.textError}>{errors.password}</Text>}
             <Pressable >
                 <Text style={styles.link}>Mot de passe oublié ?</Text>
