@@ -3,8 +3,8 @@ import { useState } from "react";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 export default function ConnectionScreen({navigation}){
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("anthony.iem@gmail.com");
+    const [password, setPassword] = useState("Anto1234!");
     const [errors, setErrors] = useState({})
 
     const firebaseErrors ={
