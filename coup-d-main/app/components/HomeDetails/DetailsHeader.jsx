@@ -23,7 +23,7 @@ export default function DetailHeader({ title, onBack }) {
 const styles = StyleSheet.create({
   header: {
     backgroundColor: "#29AAAB",
-    paddingTop: 50,
+    paddingTop: 40,
     paddingBottom: 15,
     paddingHorizontal: 15,
     flexDirection: "row",

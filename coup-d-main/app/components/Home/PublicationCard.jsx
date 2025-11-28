@@ -3,27 +3,36 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 
 export default function PublicationCard({ item, onPress }) {
   return (
-    <View style={styles.card}>
-      <Text style={styles.type}>
-        {item.isHelpRequest ? "Demande d'aide" : "Proposition"} · <Text style={styles.date}>{item.formattedDate}</Text>
-      </Text>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+      <View style={styles.card}>
+        <Text style={styles.type}>
+          {item.isHelpRequest ? "Demande d'aide" : "Proposition"} ·{" "}
+          <Text style={styles.date}>{item.formattedDate}</Text>
+        </Text>
 
-      <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.title}>{item.title}</Text>
 
-      {item.image && <Image source={{ uri: item.image }} style={styles.image} resizeMode="contain"/>}
+        {item.image && (
+          <Image
+            source={{ uri: item.image }}
+            style={styles.image}
+            resizeMode="contain"
+          />
+        )}
 
-      <View style={styles.footer}>
-        <View style={styles.category}>
-          <Text style={styles.categoryText}>{item.categoryTitle}</Text>
+        <View style={styles.footer}>
+          <View style={styles.category}>
+            <Text style={styles.categoryText}>{item.categoryTitle}</Text>
+          </View>
+
+          <TouchableOpacity style={styles.button} onPress={onPress}>
+            <Text style={styles.buttonText}>
+              {item.isHelpRequest ? "Je m'engage" : "Demander"}
+            </Text>
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={styles.button} onPress={onPress}>
-          <Text style={styles.buttonText}>
-            {item.isHelpRequest ? "Je m'engage" : "Demander"}
-          </Text>
-        </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
