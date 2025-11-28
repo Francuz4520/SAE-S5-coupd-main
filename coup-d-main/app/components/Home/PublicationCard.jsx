@@ -10,7 +10,7 @@ export default function PublicationCard({ item, onPress }) {
 
       <Text style={styles.title}>{item.title}</Text>
 
-      {item.image && <Image source={{ uri: item.image }} style={styles.image} />}
+      {item.image && <Image source={{ uri: item.image }} style={styles.image} resizeMode="contain"/>}
 
       <View style={styles.footer}>
         <View style={styles.category}>
