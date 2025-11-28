@@ -8,6 +8,7 @@ export default function triggerAutoComplete(text){
     for (const c of filteredCities) {
         if(c.LIBELLE.includes(cityText)) 
             foundCities.push({id: c.COM ,libelle: c.LIBELLE, postcode: c.DEP})
+        if(foundCities.length===10) return foundCities;
     }
     console.log(foundCities);
     return foundCities;

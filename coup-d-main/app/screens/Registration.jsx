@@ -1,4 +1,4 @@
-import {View, Image, StyleSheet, Text, Button, TextInput, Pressable, KeyboardAvoidingView, ScrollView, Platform} from "react-native"
+import {View, Image, StyleSheet, Text, TextInput, Pressable, KeyboardAvoidingView, ScrollView, Platform} from "react-native"
 import { useState } from "react";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { Checkbox } from 'expo-checkbox';
@@ -7,7 +7,7 @@ import { initializeApp } from "firebase/app";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import triggerAutoComplete, {cityExists, normalizeCityName} from '../utils/handleCities';
 import {useSafeAreaInsets } from "react-native-safe-area-context";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { SafeAreaView } from "react-native-safe-area-context";
 import CitySelector from "../components/CitySelector"
 
 export default function RegistrationScreen({navigation}){
@@ -144,16 +144,19 @@ export default function RegistrationScreen({navigation}){
 
     
     return(
-        <KeyboardAwareScrollView
-            style={styles.container}
-            contentContainerStyle={{
-                paddingBottom: insets.bottom,
-                paddingTop: 0,
-            }}
-            extraScrollHeight={60}   // optionnel : espace quand le clavier s'ouvre
-            enableOnAndroid
+       <SafeAreaView style={{ flex: 1 }}>
+            <KeyboardAvoidingView
+            style={{ flex: 1}}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
             >
-            <View> 
+            <ScrollView
+                style={styles.container}
+                contentContainerStyle={{
+                paddingBottom: 20,   // PAS plus
+                paddingTop: 0,       // pas d’offset inutile
+                }}
+                keyboardShouldPersistTaps="always"
+            >
                 <Image style={styles.logo}source={require("../../assets/images/logo_coup-dmain.png")} />
                 <Text style={styles.title}>Créer un compte</Text>
                 <Pressable style={styles.btnGoogle}>
@@ -171,60 +174,60 @@ export default function RegistrationScreen({navigation}){
                 <Text>Mot de passe<Text style={styles.mandatoryField}>*</Text></Text>
                 <TextInput style={styles.input} value={password} onChangeText={setPassword} autoCapitalize="none" secureTextEntry/>
                 {errors.password && <Text style={styles.textError}>{errors.password}</Text>}
-                <View> 
-                    <Text>Nom<Text style={styles.mandatoryField}>*</Text></Text>
-                    <TextInput style={styles.input} value={lastname} onChangeText={setLastname}/>
-                    {errors.lastname && <Text style={styles.textError}>{errors.lastname}</Text>}
-                    <Text>Prénom<Text style={styles.mandatoryField}>*</Text></Text>
-                    <TextInput style={styles.input} value={firstname} onChangeText={setFirstname}/>
-                    {errors.firstname && <Text style={styles.textError}>{errors.firstname}</Text>}
-                    <Text>Nom d'utilisateur<Text style={styles.mandatoryField}>*</Text></Text>
-                    <TextInput style={styles.input} value={username} onChangeText={setUsername} autoCapitalize="none"/>
-                    {errors.username && <Text style={styles.textError}>{errors.username}</Text>}
-                    <Text>Date de naissance<Text style={styles.mandatoryField}>*</Text></Text>
-                    <View>
-                        <TextInput style={styles.input} value={dateText} onChangeText={ (text) => {
-                            setDateText(text);
-                            createDateWithText(text);
-                        }}/>
-                        <Pressable style={styles.iconContainer}onPress={() => setShow(true)}>
-                            <Image style={styles.icon} source={require("../../assets/icons/calendar.png")}></Image>
-                        </Pressable>
-                    </View>
-                    
-                    {show && (
-                    <DateTimePicker
-                        value={dateOfBirth ?? new Date()}
-                        mode="date"
-                        display="default"
-                        onChange={onChangeDate}
-                    />)}
-                    
-                    {errors.dateOfBirth && <Text style={styles.textError}>{errors.dateOfBirth}</Text>}
-                    <Text>Ville<Text style={styles.mandatoryField}>*</Text></Text>
-                    <TextInput style={styles.input} value={city} onChangeText={(text) => {
-                        setCity(text);
-                        setCities(triggerAutoComplete(text));
+                
+                <Text>Nom<Text style={styles.mandatoryField}>*</Text></Text>
+                <TextInput style={styles.input} value={lastname} onChangeText={setLastname}/>
+                {errors.lastname && <Text style={styles.textError}>{errors.lastname}</Text>}
+                <Text>Prénom<Text style={styles.mandatoryField}>*</Text></Text>
+                <TextInput style={styles.input} value={firstname} onChangeText={setFirstname}/>
+                {errors.firstname && <Text style={styles.textError}>{errors.firstname}</Text>}
+                <Text>Nom d'utilisateur<Text style={styles.mandatoryField}>*</Text></Text>
+                <TextInput style={styles.input} value={username} onChangeText={setUsername} autoCapitalize="none"/>
+                {errors.username && <Text style={styles.textError}>{errors.username}</Text>}
+                <Text>Date de naissance<Text style={styles.mandatoryField}>*</Text></Text>
+                <View>
+                    <TextInput style={styles.input} value={dateText} onChangeText={ (text) => {
+                        setDateText(text);
+                        createDateWithText(text);
                     }}/>
-                    <CitySelector cities={cities} setCity={setCity}></CitySelector>
-                    
-                    
-                    
-                    
-                    {errors.city && <Text style={styles.textError}>{errors.city}</Text>}
-                    <Text>Numéro de téléphone</Text>
-                    <TextInput style={styles.input} value={phoneNumber} onChangeText={setPhoneNumber} inputMode="tel"/>
-                    {errors.phoneNumber && <Text style={styles.textError}>{errors.phoneNumber}</Text>}
-                    <View style={styles.blocCGU}>
-                        <Checkbox style={styles.checkBox}></Checkbox>
-                        <Text>J'accepte les </Text>
-                        <Pressable  >
-                            <Text style={styles.linkCGU}>conditions générales d'utilisation</Text>
-                        </Pressable>
-                    </View>
-                    
-                    <Text style={styles.mandatoryFieldText}><Text style={styles.mandatoryField}>*</Text> Champs obligatoires</Text>
+                    <Pressable style={styles.iconContainer}onPress={() => setShow(true)}>
+                        <Image style={styles.icon} source={require("../../assets/icons/calendar.png")}></Image>
+                    </Pressable>
                 </View>
+                
+                {show && (
+                <DateTimePicker
+                    value={dateOfBirth ?? new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={onChangeDate}
+                />)}
+                
+                {errors.dateOfBirth && <Text style={styles.textError}>{errors.dateOfBirth}</Text>}
+                <Text>Ville<Text style={styles.mandatoryField}>*</Text></Text>
+                <TextInput style={styles.input} value={city} onChangeText={(text) => {
+                    setCity(text);
+                    setCities(triggerAutoComplete(text));
+                }}/>
+                <CitySelector cities={cities} setCity={setCity} setCities={setCities}></CitySelector>
+                
+                
+                
+                
+                {errors.city && <Text style={styles.textError}>{errors.city}</Text>}
+                <Text>Numéro de téléphone</Text>
+                <TextInput style={styles.input} value={phoneNumber} onChangeText={setPhoneNumber} inputMode="tel"/>
+                {errors.phoneNumber && <Text style={styles.textError}>{errors.phoneNumber}</Text>}
+                <View style={styles.blocCGU}>
+                    <Checkbox style={styles.checkBox}></Checkbox>
+                    <Text>J'accepte les </Text>
+                    <Pressable  >
+                        <Text style={styles.linkCGU}>conditions générales d'utilisation</Text>
+                    </Pressable>
+                </View>
+                
+                <Text style={styles.mandatoryFieldText}><Text style={styles.mandatoryField}>*</Text> Champs obligatoires</Text>
+                
                 <Pressable style={styles.btnConnection} onPress={handleSignup}>
                     <Text style={styles.btnConnectionText}>S'inscrire</Text>
                 </Pressable>
@@ -232,8 +235,9 @@ export default function RegistrationScreen({navigation}){
                 <Pressable onPress={() => navigation.navigate("Connection")}>
                     <Text style={styles.linkCreateAccount}>Se connecter</Text>
                 </Pressable>
-                </View>
-        </KeyboardAwareScrollView>
+                </ScrollView>
+        </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
 const styles = StyleSheet.create({
