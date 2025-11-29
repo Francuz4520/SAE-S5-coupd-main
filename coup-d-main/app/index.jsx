@@ -98,7 +98,6 @@ export default function Index() {
       <Stack.Screen name="Connection" component={Connection}/>
       <Stack.Screen name="Registration" component={Registration}/>
       <Stack.Screen name="Home" component={Tabs}/>
-      <Stack.Screen name="Profile" component={ProfileScreen}/>
       <Stack.Screen name="EditProfile" component={EditProfile}/>
       <Stack.Screen name="HomeDetails" component={HomeDetails}/>
     </Stack.Navigator>

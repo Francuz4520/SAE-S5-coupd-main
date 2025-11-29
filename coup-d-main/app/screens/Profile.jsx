@@ -1,5 +1,6 @@
 import {Text, View, StyleSheet, Image, TouchableOpacity} from "react-native";
 import { useEffect, useState } from "react";
+import { useIsFocused } from '@react-navigation/native';
 import { auth } from "../api/Firestore";
 import { getUserDocument } from "../api/firestoreService";
 import Banner from "@/app/components/Banner";
@@ -7,6 +8,7 @@ import DetailHeader from "@/app/components/HomeDetails/DetailsHeader";
 export default function ProfileScreen({navigation}) {
 
     const [user, setUser] = useState(null);
+    const isFocused = useIsFocused();
     useEffect(() => {
         async function load() {
             const current = auth.currentUser;
@@ -17,7 +19,7 @@ export default function ProfileScreen({navigation}) {
             setUser(data);
         }
         load();
-    }, []);
+    }, [isFocused]);
 
     if(!user){
         return (
