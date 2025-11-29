@@ -7,7 +7,14 @@ const Banner = ({ text, onBack, showBack = true }) => {
         <View style={styles.container}>
 
             {showBack && (
-                <TouchableOpacity onPress={() => navigation.navigate(onBack)}>
+                <TouchableOpacity onPress={() => {
+                    // if onBack isn't provided -> go back
+                    if (!onBack) return navigation.goBack();
+                    // if onBack is a function call it (gives consumers full control)
+                    if (typeof onBack === 'function') return onBack();
+                    // otherwise navigate to the provided route name
+                    return navigation.navigate(onBack);
+                }}>
                     <Text style={styles.backText}>←</Text>
                 </TouchableOpacity>
             )}

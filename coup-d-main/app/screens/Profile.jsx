@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { auth } from "../api/Firestore";
 import { getUserDocument } from "../api/firestoreService";
 import Banner from "@/app/components/Banner";
+import DetailHeader from "@/app/components/HomeDetails/DetailsHeader";
 export default function ProfileScreen({navigation}) {
 
     const [user, setUser] = useState(null);
@@ -29,6 +30,7 @@ export default function ProfileScreen({navigation}) {
   return (
     <View>
         <Banner text={"Profil"} showBack={false}></Banner>
+
         <View style={styles.profileRow}>
             {/* Avatar */}
             <Image
