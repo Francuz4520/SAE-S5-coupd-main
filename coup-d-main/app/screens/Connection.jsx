@@ -1,12 +1,15 @@
 import {View, Image, StyleSheet, Text, Button, TextInput, Pressable, KeyboardAvoidingView, Platform} from "react-native"
 import { useState } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useKeyboard } from "@react-native-community/hooks";
+import { Checkbox } from 'expo-checkbox';
 
 export default function ConnectionScreen({navigation}){
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({})
+    const [stayConnected, setStayConnected] = useState(false);
     const keyboard = useKeyboard();
 
     const firebaseErrors ={
@@ -16,7 +19,6 @@ export default function ConnectionScreen({navigation}){
         "auth/wrong-password": "Mot de passe invalide",
         "auth/invalid-credential" : "Email ou mot de passe incorrect.",
         "auth/too-many-requests":"Nombre d'essais dépassé. Réessayez plus tard."
-        
     }
 
     function handleSignin(){
@@ -25,6 +27,7 @@ export default function ConnectionScreen({navigation}){
             .then((userCredential) => {
                 const user = userCredential.user;
                 console.log("Utilisateur connecté " + user.email)
+                if(stayConnected) AsyncStorage.setItem("user", JSON.stringify(user));
                 navigation.navigate("Home")
             })
             .catch((error) => {
@@ -65,6 +68,10 @@ export default function ConnectionScreen({navigation}){
                     <Text style={styles.link}>Mot de passe oublié ?</Text>
                 </Pressable>
                 {errors.account && <Text style={styles.textError}>{errors.account}</Text>}
+                <View style={styles.blocCGU}>
+                    <Checkbox style={styles.checkBox} value={stayConnected} onValueChange={setStayConnected}></Checkbox>
+                    <Text>Rester connecté</Text>
+                </View>
                 <Pressable style={styles.btnConnection} onPress={handleSignin}>
                     <Text style={styles.btnConnectionText} >Se connecter</Text>
                 </Pressable>
@@ -153,6 +160,14 @@ const styles = StyleSheet.create({
     textError: {
         color: "red",
         marginBottom: 10
-    }
+    },
+    blocCGU: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 10
+    },
+    checkBox:{
+        marginRight: 10
+    },
     
 });

@@ -9,6 +9,7 @@ import triggerAutoComplete, {cityExists, normalizeCityName} from '../utils/handl
 import {useSafeAreaInsets } from "react-native-safe-area-context";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CitySelector from "../components/CitySelector"
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RegistrationScreen({navigation}){
     const [email, setEmail] = useState("");
@@ -24,6 +25,7 @@ export default function RegistrationScreen({navigation}){
     const [errors, setErrors] = useState({});
     const [cities, setCities] = useState([]);
     const insets = useSafeAreaInsets();
+    const [stayConnected, setStayConnected] = useState(false);
 
     const onChangeDate = (event, selectedDate) => {
         setShow(false);
@@ -70,6 +72,7 @@ export default function RegistrationScreen({navigation}){
             registerInformations(user.uid);
 
             console.log("Utilisateur créé", user.email);
+            if(stayConnected) AsyncStorage.setItem("user", JSON.stringify(user));
             navigation.navigate("Home");
 
         } catch (error) {
@@ -142,7 +145,6 @@ export default function RegistrationScreen({navigation}){
         );
     }
 
-    
     return(
        <SafeAreaView style={{ flex: 1 }}>
             <KeyboardAvoidingView
@@ -228,6 +230,10 @@ export default function RegistrationScreen({navigation}){
                 
                 <Text style={styles.mandatoryFieldText}><Text style={styles.mandatoryField}>*</Text> Champs obligatoires</Text>
                 
+                <View style={styles.blocCGU}>
+                    <Checkbox style={styles.checkBox} value={stayConnected} onValueChange={setStayConnected}></Checkbox>
+                    <Text>Rester connecté</Text>
+                </View>
                 <Pressable style={styles.btnConnection} onPress={handleSignup}>
                     <Text style={styles.btnConnectionText}>S'inscrire</Text>
                 </Pressable>
@@ -316,7 +322,8 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
     checkBox:{
-        marginRight: 10
+        marginRight: 10,
+        marginBottom: 10
     },
     blocCGU: {
         flexDirection: "row",
