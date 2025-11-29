@@ -1,10 +1,10 @@
-import { Text, View, StyleSheet, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Alert, Image, ActivityIndicator } from "react-native";
+import { Text, View, StyleSheet, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Alert, Image } from "react-native";
 import { useState} from "react"
 import { usePublications } from "../hooks/usePublications";
 import * as ImagePicker from "expo-image-picker";
 import { uploadToImgBB } from "../utils/imgbbService"; // Import de notre service
 
-import { getAuth } from "firebase/auth";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
   getFirestore,
@@ -67,8 +67,7 @@ export default function PublishScreen(){
   async function handlePublish() {
     if (!validate()) return;
 
-    const auth = getAuth();
-    const user = auth.currentUser;
+    const user = JSON.parse(await AsyncStorage.getItem("user"));
 
     if (!user) {
       Alert.alert("Connexion requise", "Vous devez être connecté pour publier.");
