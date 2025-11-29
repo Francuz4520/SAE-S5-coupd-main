@@ -8,9 +8,9 @@ import PublishScreen from "./screens/Publish";
 import MessagesScreen from "./screens/Messages";
 import ProfileScreen from "./screens/Profile";
 import SplashScreen from './screens/SplashScreen';
-import Connection from './screens/Connection'
-import Registration from './screens/Registration'
-import RegistrationDetails from './screens/RegistrationDetails'
+import Connection from './screens/Connection';
+import Registration from './screens/Registration';
+import HomeDetails from './screens/HomeDetails';
 import EditProfile from "./screens/EditProfile";
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
@@ -98,10 +98,10 @@ export default function Index() {
       <Stack.Screen name="Splash" component={SplashScreen}/>
       <Stack.Screen name="Connection" component={Connection}/>
       <Stack.Screen name="Registration" component={Registration}/>
-      <Stack.Screen name="RegistrationDetails" component={RegistrationDetails}/>
       <Stack.Screen name="Home" component={Tabs}/>
       <Stack.Screen name="Profile" component={ProfileScreen}/>
       <Stack.Screen name="EditProfile" component={EditProfile}/>
+      <Stack.Screen name="HomeDetails" component={HomeDetails}/>
     </Stack.Navigator>
   );
 }

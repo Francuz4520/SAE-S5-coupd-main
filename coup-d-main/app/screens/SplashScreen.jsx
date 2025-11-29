@@ -1,10 +1,17 @@
 import { useEffect } from "react";
 import { Text, View, StyleSheet, Image } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SplashScreen({navigation}){
     useEffect(() => {
-        setTimeout(() => {
-            navigation.navigate('Connection')
+        setTimeout(async () => {
+            const user = await AsyncStorage.getItem("user");
+            if(user){
+                console.log("Connection automatique de", JSON.parse(user).email);
+                navigation.navigate('Home');
+            } else {
+                navigation.navigate('Connection');
+            }
         }, 3000);
     }, []);
     return(

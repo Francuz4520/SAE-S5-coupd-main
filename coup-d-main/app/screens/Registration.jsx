@@ -1,10 +1,15 @@
-import {View, Image, StyleSheet, Text, Button, TextInput, Pressable, KeyboardAvoidingView, ScrollView} from "react-native"
+import {View, Image, StyleSheet, Text, TextInput, Pressable, KeyboardAvoidingView, ScrollView, Platform} from "react-native"
 import { useState } from "react";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { Checkbox } from 'expo-checkbox';
-import { doc, setDoc, getFirestore } from "firebase/firestore"; 
+import { doc, setDoc, getFirestore, loadBundle } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import triggerAutoComplete, {cityExists, normalizeCityName} from '../utils/handleCities';
+import {useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
+import CitySelector from "../components/CitySelector"
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RegistrationScreen({navigation}){
     const [email, setEmail] = useState("");
@@ -18,6 +23,9 @@ export default function RegistrationScreen({navigation}){
     const [city, setCity] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [errors, setErrors] = useState({});
+    const [cities, setCities] = useState([]);
+    const insets = useSafeAreaInsets();
+    const [stayConnected, setStayConnected] = useState(false);
 
     const onChangeDate = (event, selectedDate) => {
         setShow(false);
@@ -64,6 +72,7 @@ export default function RegistrationScreen({navigation}){
             registerInformations(user.uid);
 
             console.log("Utilisateur créé", user.email);
+            if(stayConnected) AsyncStorage.setItem("user", JSON.stringify(user));
             navigation.navigate("Home");
 
         } catch (error) {
@@ -82,7 +91,6 @@ export default function RegistrationScreen({navigation}){
         let validationErrors = {};
 
         const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\-]+$/;
-        const cityRegex = /^([a-zA-Z\u0080-\u024F]+(?:. |-| |'))*[a-zA-Z\u0080-\u024F]*$/;
         const phoneNumberRegex = /^0[1-9]\d{8}$/;
         
         if(firstname === ""){
@@ -108,8 +116,8 @@ export default function RegistrationScreen({navigation}){
         if(city === ""){
             validationErrors.city = "La ville doit être renseignée."
         }
-        else if(!cityRegex.test(city)){
-            validationErrors.city = "La ville ne doit contenir que des lettres, des espaces et des tirets."
+        else if(!cityExists(city)){
+            validationErrors.city = "La ville n'est pas valide."
         }
         if(phoneNumber !== "" && !phoneNumberRegex.test(phoneNumber)){
             validationErrors.phoneNumber = "Le numéro de téléphone n'est pas valide."
@@ -128,8 +136,8 @@ export default function RegistrationScreen({navigation}){
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
-        const fields = {firstname, lastname, username, dateOfBirth, city}
+        const cityNormalized = normalizeCityName(city)
+        const fields = {firstname, lastname, username, dateOfBirth, cityNormalized}
         if(phoneNumber !== "") fields.phoneNumber = phoneNumber;
                     
         await setDoc(doc(db, "users", id), 
@@ -137,28 +145,38 @@ export default function RegistrationScreen({navigation}){
         );
     }
 
-    
     return(
-        <ScrollView style={styles.container}>
-           <View> 
-            <Image style={styles.logo}source={require("../../assets/images/logo_coup-dmain.png")} />
-            <Text style={styles.title}>Créer un compte</Text>
-            <Pressable style={styles.btnGoogle}>
-                <Image style={styles.logoGoogle}source={require("../../assets/images/logo_google.png")}></Image>
-                <Text>Continuer avec Google</Text>
-            </Pressable>
-            <View style={styles.orSeparation}>
-                <View style={styles.line}></View>
-                <View><Text style={{marginHorizontal: 10}}>OU</Text></View>
-                <View style={styles.line}></View>
-            </View>
-            <Text>Email<Text style={styles.mandatoryField}>*</Text></Text>
-            <TextInput style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none" inputMode="email"/>
-            {errors.email && <Text style={styles.textError}>{errors.email}</Text>}
-            <Text>Mot de passe<Text style={styles.mandatoryField}>*</Text></Text>
-            <TextInput style={styles.input} value={password} onChangeText={setPassword} autoCapitalize="none" secureTextEntry/>
-            {errors.password && <Text style={styles.textError}>{errors.password}</Text>}
-            <View> 
+       <SafeAreaView style={{ flex: 1 }}>
+            <KeyboardAvoidingView
+            style={{ flex: 1}}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
+            <ScrollView
+                style={styles.container}
+                contentContainerStyle={{
+                paddingBottom: 20,   // PAS plus
+                paddingTop: 0,       // pas d’offset inutile
+                }}
+                keyboardShouldPersistTaps="always"
+            >
+                <Image style={styles.logo}source={require("../../assets/images/logo_coup-dmain.png")} />
+                <Text style={styles.title}>Créer un compte</Text>
+                <Pressable style={styles.btnGoogle}>
+                    <Image style={styles.logoGoogle}source={require("../../assets/images/logo_google.png")}></Image>
+                    <Text>Continuer avec Google</Text>
+                </Pressable>
+                <View style={styles.orSeparation}>
+                    <View style={styles.line}></View>
+                    <View><Text style={{marginHorizontal: 10}}>OU</Text></View>
+                    <View style={styles.line}></View>
+                </View>
+                <Text>Email<Text style={styles.mandatoryField}>*</Text></Text>
+                <TextInput style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none" inputMode="email"/>
+                {errors.email && <Text style={styles.textError}>{errors.email}</Text>}
+                <Text>Mot de passe<Text style={styles.mandatoryField}>*</Text></Text>
+                <TextInput style={styles.input} value={password} onChangeText={setPassword} autoCapitalize="none" secureTextEntry/>
+                {errors.password && <Text style={styles.textError}>{errors.password}</Text>}
+                
                 <Text>Nom<Text style={styles.mandatoryField}>*</Text></Text>
                 <TextInput style={styles.input} value={lastname} onChangeText={setLastname}/>
                 {errors.lastname && <Text style={styles.textError}>{errors.lastname}</Text>}
@@ -189,7 +207,15 @@ export default function RegistrationScreen({navigation}){
                 
                 {errors.dateOfBirth && <Text style={styles.textError}>{errors.dateOfBirth}</Text>}
                 <Text>Ville<Text style={styles.mandatoryField}>*</Text></Text>
-                <TextInput style={styles.input} value={city} onChangeText={setCity}/>
+                <TextInput style={styles.input} value={city} onChangeText={(text) => {
+                    setCity(text);
+                    setCities(triggerAutoComplete(text));
+                }}/>
+                <CitySelector cities={cities} setCity={setCity} setCities={setCities}></CitySelector>
+                
+                
+                
+                
                 {errors.city && <Text style={styles.textError}>{errors.city}</Text>}
                 <Text>Numéro de téléphone</Text>
                 <TextInput style={styles.input} value={phoneNumber} onChangeText={setPhoneNumber} inputMode="tel"/>
@@ -203,17 +229,21 @@ export default function RegistrationScreen({navigation}){
                 </View>
                 
                 <Text style={styles.mandatoryFieldText}><Text style={styles.mandatoryField}>*</Text> Champs obligatoires</Text>
-            </View>
-            <Pressable style={styles.btnConnection} onPress={handleSignup}>
-                <Text style={styles.btnConnectionText}>S'inscrire</Text>
-            </Pressable>
-            <Text style={styles.noAccountText}>Vous possédez déjà un compte ?</Text>
-            <Pressable onPress={() => navigation.navigate("Connection")}>
-                <Text style={styles.linkCreateAccount}>Se connecter</Text>
-            </Pressable>
-            </View>
-        </ScrollView>
-        
+                
+                <View style={styles.blocCGU}>
+                    <Checkbox style={styles.checkBox} value={stayConnected} onValueChange={setStayConnected}></Checkbox>
+                    <Text>Rester connecté</Text>
+                </View>
+                <Pressable style={styles.btnConnection} onPress={handleSignup}>
+                    <Text style={styles.btnConnectionText}>S'inscrire</Text>
+                </Pressable>
+                <Text style={styles.noAccountText}>Vous possédez déjà un compte ?</Text>
+                <Pressable onPress={() => navigation.navigate("Connection")}>
+                    <Text style={styles.linkCreateAccount}>Se connecter</Text>
+                </Pressable>
+                </ScrollView>
+        </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
 const styles = StyleSheet.create({
@@ -292,7 +322,8 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
     checkBox:{
-        marginRight: 10
+        marginRight: 10,
+        marginBottom: 10
     },
     blocCGU: {
         flexDirection: "row",
@@ -319,5 +350,15 @@ const styles = StyleSheet.create({
     icon: {
         width: 34,
         height: 34,
+    },
+    city: {
+        backgroundColor: "white",
+        padding: 5,
+        borderBottomWidth: 1,
+        borderColor: "black",
+    },
+    
+    cityPressed: {
+        backgroundColor: "#DEDEDE"
     }
 });
