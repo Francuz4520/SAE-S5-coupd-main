@@ -59,7 +59,7 @@ export default function ConnectionScreen({navigation}){
                     <View style={styles.line}></View>
                 </View>
                 <Text>Email</Text>
-                <TextInput style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none"/>
+                <TextInput style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none" inputMode="email"/>
                 {errors.email && <Text style={styles.textError}>{errors.email}</Text>}
                 <Text>Mot de passe</Text>
                 <TextInput style={styles.input} value={password} onChangeText={setPassword} autoCapitalize="none" secureTextEntry/>
