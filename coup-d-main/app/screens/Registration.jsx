@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import CitySelector from "../components/CitySelector"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 export default function RegistrationScreen({route, navigation}){
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -148,6 +149,8 @@ export default function RegistrationScreen({route, navigation}){
         );
     }
 
+    
+    
     return(
        <SafeAreaView style={{ flex: 1 }}>
             <KeyboardAvoidingView
