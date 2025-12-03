@@ -3,9 +3,8 @@ import { useState} from "react"
 import { usePublications } from "../hooks/usePublications";
 import * as ImagePicker from "expo-image-picker";
 import { uploadToImgBB } from "../utils/imgbbService"; // Import de notre service
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { getAuth } from "firebase/auth";
 import {
   getFirestore,
   collection,
@@ -67,7 +66,7 @@ export default function PublishScreen(){
   async function handlePublish() {
     if (!validate()) return;
 
-    const user = JSON.parse(await AsyncStorage.getItem("user"));
+    const user = JSON.parse(await AsyncStorage.getItem("user")) || getAuth().currentUser;
 
     if (!user) {
       Alert.alert("Connexion requise", "Vous devez être connecté pour publier.");

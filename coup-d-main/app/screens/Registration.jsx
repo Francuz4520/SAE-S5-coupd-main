@@ -1,5 +1,5 @@
 import {View, Image, StyleSheet, Text, TextInput, Pressable, KeyboardAvoidingView, ScrollView, Platform} from "react-native"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { Checkbox } from 'expo-checkbox';
 import { doc, setDoc, getFirestore, loadBundle } from "firebase/firestore";
@@ -11,7 +11,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import CitySelector from "../components/CitySelector"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function RegistrationScreen({navigation}){
+
+export default function RegistrationScreen({route, navigation}){
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [lastname, setLastname] = useState("");
@@ -25,7 +26,9 @@ export default function RegistrationScreen({navigation}){
     const [errors, setErrors] = useState({});
     const [cities, setCities] = useState([]);
     const insets = useSafeAreaInsets();
+    const [cgu, setCgu] = useState(false);
     const [stayConnected, setStayConnected] = useState(false);
+
 
     const onChangeDate = (event, selectedDate) => {
         setShow(false);
@@ -99,14 +102,12 @@ export default function RegistrationScreen({navigation}){
         else if (!nameRegex.test(firstname)) {
             validationErrors.firstname = "Le prénom ne doit contenir que des lettres.";
         }
-
         if(lastname === ""){
             validationErrors.lastname = "Le nom doit être renseigné.";
         }
         else if (!nameRegex.test(lastname)) {
             validationErrors.lastname = "Le nom ne doit contenir que des lettres.";
         }
-
         if(username === ""){
             validationErrors.username = "Le nom d'utilisateur doit être renseigné."
         }
@@ -121,6 +122,9 @@ export default function RegistrationScreen({navigation}){
         }
         if(phoneNumber !== "" && !phoneNumberRegex.test(phoneNumber)){
             validationErrors.phoneNumber = "Le numéro de téléphone n'est pas valide."
+        }
+        if(cgu === false) {
+            validationErrors.cgu = "Veuillez lire et accepter les conditions générales d'utilisation."
         }
         return validationErrors;
     }   
@@ -145,6 +149,8 @@ export default function RegistrationScreen({navigation}){
         );
     }
 
+    
+    
     return(
        <SafeAreaView style={{ flex: 1 }}>
             <KeyboardAvoidingView
@@ -221,16 +227,19 @@ export default function RegistrationScreen({navigation}){
                 <TextInput style={styles.input} value={phoneNumber} onChangeText={setPhoneNumber} inputMode="tel"/>
                 {errors.phoneNumber && <Text style={styles.textError}>{errors.phoneNumber}</Text>}
                 <View style={styles.blocCGU}>
-                    <Checkbox style={styles.checkBox}></Checkbox>
-                    <Text>J'accepte les </Text>
-                    <Pressable  >
+                    <Checkbox style={styles.checkBox} value={cgu} onValueChange={setCgu}></Checkbox>
+                    <View style={styles.textCgu}>
+                        <Text >J'ai lu et j'accepte les </Text>
+                    <Pressable onPress={() => navigation.navigate("Cgu")}>
                         <Text style={styles.linkCGU}>conditions générales d'utilisation</Text>
                     </Pressable>
+                    </View>
                 </View>
+                {errors.cgu && <Text style={styles.textError}>{errors.cgu}</Text>}
                 
                 <Text style={styles.mandatoryFieldText}><Text style={styles.mandatoryField}>*</Text> Champs obligatoires</Text>
                 
-                <View style={styles.blocCGU}>
+                <View style={styles.blocConnected}>
                     <Checkbox style={styles.checkBox} value={stayConnected} onValueChange={setStayConnected}></Checkbox>
                     <Text>Rester connecté</Text>
                 </View>
@@ -327,12 +336,16 @@ const styles = StyleSheet.create({
     },
     blocCGU: {
         flexDirection: "row",
+        alignItems: "center"
+    },
+    textCgu: {
+        flexDirection: "column"
     },
     linkCGU:{
         color: "#00BFFF",
         textDecorationLine: "underline",
         alignSelf: "center",
-        marginBottom: 10
+        marginBottom: 10,
     },
     mandatoryFieldText: {
         alignSelf: "center",
@@ -360,5 +373,9 @@ const styles = StyleSheet.create({
     
     cityPressed: {
         backgroundColor: "#DEDEDE"
+    },
+
+    blocConnected: {
+        flexDirection: "row"
     }
 });

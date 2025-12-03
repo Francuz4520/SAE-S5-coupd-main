@@ -1,7 +1,7 @@
-import {View, Image, StyleSheet, Text, Button, TextInput, Pressable, KeyboardAvoidingView, Platform} from "react-native"
+import {View, Image, StyleSheet, Text, Button, TextInput, Pressable, KeyboardAvoidingView, Platform, Alert} from "react-native"
 import { useState } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail} from "firebase/auth";
 import { useKeyboard } from "@react-native-community/hooks";
 import { Checkbox } from 'expo-checkbox';
 
@@ -11,10 +11,12 @@ export default function ConnectionScreen({navigation}){
     const [errors, setErrors] = useState({})
     const [stayConnected, setStayConnected] = useState(false);
     const keyboard = useKeyboard();
+    
 
     const firebaseErrors ={
         "auth/email-already-in-use": "Cette adresse e-mail est déjà utilisée.",
         "auth/invalid-email": "L'adresse e-mail n'est pas valide.",
+        "auth/missing-email": "Veuillez saisir une adresse mail",
         "auth/missing-password": "Veuillez saisir un mot de passe.",
         "auth/wrong-password": "Mot de passe invalide",
         "auth/invalid-credential" : "Email ou mot de passe incorrect.",
@@ -22,26 +24,49 @@ export default function ConnectionScreen({navigation}){
     }
 
     function handleSignin(){
-            const auth = getAuth();
-            signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-                console.log("Utilisateur connecté " + user.email)
-                if(stayConnected) AsyncStorage.setItem("user", JSON.stringify(user));
-                navigation.navigate("Home")
-            })
-            .catch((error) => {
-                let errors = {}
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                console.log("Echec de connexion de l'utilisateur : " + errorCode + " => " + errorMessage)
-        
-                if(errorCode.includes("email")){errors.email = firebaseErrors[errorCode]}
-                if(errorCode.includes("password")){errors.password = firebaseErrors[errorCode]}
-                if(errorCode.includes("credential") || errorCode.includes("requests")){errors.account = firebaseErrors[errorCode]}
-                setErrors(errors); 
-            });
-        }
+        const auth = getAuth();
+        signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            console.log("Utilisateur connecté " + user.email)
+            if(stayConnected) AsyncStorage.setItem("user", JSON.stringify(user));
+            navigation.navigate("Home")
+        })
+        .catch((error) => {
+            let errors = {}
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log("Echec de connexion de l'utilisateur : " + errorCode + " => " + errorMessage)
+    
+            if(errorCode.includes("email")){errors.email = firebaseErrors[errorCode]}
+            if(errorCode.includes("password")){errors.password = firebaseErrors[errorCode]}
+            if(errorCode.includes("credential") || errorCode.includes("requests")){errors.account = firebaseErrors[errorCode]}
+            setErrors(errors); 
+        });
+    }
+
+    function forgottenPassword(){
+        const auth = getAuth();
+        sendPasswordResetEmail(auth, email)
+        .then(() => {
+            setErrors([])
+            Alert.alert(
+                "Mot de passe oublié",
+                `Un email de réinitialisation a été envoyé à : ${email}` ,
+                [{ text: "OK" }],
+                { cancelable: false }
+            );
+        })
+        .catch((error) => {
+            console.log("erreur reset password", error.message)
+            let errors = {}
+            const errorCode = error.code;
+            if(errorCode.includes("email")){errors.email = firebaseErrors[errorCode]}
+            if(errorCode.includes("credential") || errorCode.includes("requests")){errors.account = firebaseErrors[errorCode]}
+            setErrors(errors); 
+        });
+    }   
+
     return(
         <KeyboardAvoidingView style={{ flex: 1 }}
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'} >
@@ -59,12 +84,12 @@ export default function ConnectionScreen({navigation}){
                     <View style={styles.line}></View>
                 </View>
                 <Text>Email</Text>
-                <TextInput style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none"/>
+                <TextInput style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none" inputMode="email"/>
                 {errors.email && <Text style={styles.textError}>{errors.email}</Text>}
                 <Text>Mot de passe</Text>
                 <TextInput style={styles.input} value={password} onChangeText={setPassword} autoCapitalize="none" secureTextEntry/>
                 {errors.password && <Text style={styles.textError}>{errors.password}</Text>}
-                <Pressable >
+                <Pressable onPress={forgottenPassword}>
                     <Text style={styles.link}>Mot de passe oublié ?</Text>
                 </Pressable>
                 {errors.account && <Text style={styles.textError}>{errors.account}</Text>}
