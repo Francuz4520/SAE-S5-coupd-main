@@ -12,6 +12,7 @@ import Connection from './screens/Connection';
 import Registration from './screens/Registration';
 import HomeDetails from './screens/HomeDetails';
 import Cgu from "./screens/Cgu"
+import EditProfile from "./screens/EditProfile";
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 
@@ -99,6 +100,7 @@ export default function Index() {
       <Stack.Screen name="Connection" component={Connection}/>
       <Stack.Screen name="Registration" component={Registration}/>
       <Stack.Screen name="Home" component={Tabs}/>
+      <Stack.Screen name="EditProfile" component={EditProfile}/>
       <Stack.Screen name="HomeDetails" component={HomeDetails}/>
       <Stack.Screen name="Cgu" component={Cgu}/>
     </Stack.Navigator>
