@@ -18,6 +18,8 @@ export default function HomeDetails({ route, navigation }) {
   // Gestionnaire d'action
   const handleActionPress = () => {
     console.log("Action sur la publication :", publication.id);
+    console.log("ID de l'auteur :", publication.idUser);
+    navigation.navigate('Chat', { interlocutors: [publication.idUser] });
   };
 
   return (
