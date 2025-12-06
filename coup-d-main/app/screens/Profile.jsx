@@ -1,14 +1,20 @@
-import {Text, View, StyleSheet, Image, TouchableOpacity} from "react-native";
+import {Text, View, StyleSheet, Image, TouchableOpacity, FlatList} from "react-native";
 import { useEffect, useState } from "react";
 import { useIsFocused } from '@react-navigation/native';
 import { auth } from "../api/Firestore";
 import { getUserDocument } from "../api/firestoreService";
 import Banner from "@/app/components/Banner";
 import DetailHeader from "@/app/components/HomeDetails/DetailsHeader";
+import PublicationCard from '@/app/components/Home/PublicationCard';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../config/firebase';
+import { formatDate } from '../utils/date';
 export default function ProfileScreen({navigation}) {
 
     const [user, setUser] = useState(null);
     const isFocused = useIsFocused();
+    const [publications, setPublications] = useState([]);
+    const [loadingPubs, setLoadingPubs] = useState(true);
     useEffect(() => {
         async function load() {
             const current = auth.currentUser;
@@ -21,6 +27,49 @@ export default function ProfileScreen({navigation}) {
         load();
     }, [isFocused]);
 
+    useEffect(() => {
+        // load user's publications when profile is focused
+        const current = auth.currentUser;
+        if (!current) {
+            setPublications([]);
+            setLoadingPubs(false);
+            return;
+        }
+
+        // first load categories to map id->title
+        let categoriesMap = {};
+        const unsubCategories = onSnapshot(collection(db, 'categories'), (snap) => {
+            const map = {};
+            snap.docs.forEach(d => { map[d.id] = d.data().title; });
+            categoriesMap = map;
+        });
+
+        const q = query(
+            collection(db, 'publications'),
+            where('idUser', '==', current.uid),
+            //where('isFinished', '==', true) si on veux que les publication terminer
+        );
+        setLoadingPubs(true);
+        const unsub = onSnapshot(q, async (snapshot) => {
+            const temp = snapshot.docs.map(d => {
+                const item = d.data();
+                return {
+                    id: d.id,
+                    ...item,
+                    formattedDate: formatDate(item.date),
+                    categoryTitle: categoriesMap[item.idCategory] || 'Inconnue'
+                };
+            });
+            setPublications(temp);
+            setLoadingPubs(false);
+        });
+
+        return () => {
+            unsub && unsub();
+            unsubCategories && unsubCategories();
+        };
+    }, [isFocused]);
+
     if(!user){
         return (
             <View>
@@ -29,8 +78,9 @@ export default function ProfileScreen({navigation}) {
             </View>
         );
     }
-  return (
-    <View>
+
+    return (
+    <View style={{flex:1}}>
         <Banner text={"Profil"} showBack={false}></Banner>
 
         <View style={styles.profileRow}>
@@ -56,6 +106,21 @@ export default function ProfileScreen({navigation}) {
         >
             <Text style={styles.editButtonText}>Modifier mon profil</Text>
         </TouchableOpacity>
+
+        <View style={{marginTop:16, paddingHorizontal:15}}>
+            <Text style={{fontWeight:'700', marginBottom:8}}>Mes publications</Text>
+            {loadingPubs && <Text>Chargement des publications...</Text>}
+            {!loadingPubs && publications.length === 0 && <Text>Aucune publication pour le moment.</Text>}
+            {!loadingPubs && publications.length > 0 && (
+                <FlatList
+                    data={publications}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({item}) => (
+                        <PublicationCard item={item} onPress={() => navigation.navigate('HomeDetails', { publication: item } )} hideAction={true}/>
+                    )}
+                />
+            )}
+        </View>
     </View>
   );
 }
