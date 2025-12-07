@@ -1,6 +1,6 @@
 
 import React from "react";
-import { View, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet, Alert } from "react-native";
 
 import DetailHeader from "../components/HomeDetails/DetailsHeader";
 import DetailHero from "../components/HomeDetails/DetailsHero";
@@ -8,6 +8,8 @@ import DetailBody from "../components/HomeDetails/DetailsBody";
 import DetailFooter from "../components/HomeDetails/DetailsFooter";
 
 import { formatDate } from "../utils/date";
+import { auth } from '../api/Firestore';
+import { deletePublication, setPublicationFinished } from '../api/firestoreService';
 
 export default function HomeDetails({ route, navigation }) {
   // On récupère la donnée
@@ -18,6 +20,33 @@ export default function HomeDetails({ route, navigation }) {
   // Gestionnaire d'action
   const handleActionPress = () => {
     console.log("Action sur la publication :", publication.id);
+  };
+
+  const isOwner = auth.currentUser && publication.idUser === auth.currentUser.uid;
+
+  const handleDelete = () => {
+    Alert.alert('Supprimer', 'Voulez-vous vraiment supprimer cette publication ?', [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Supprimer', style: 'destructive', onPress: async () => {
+        try {
+          await deletePublication(publication.id);
+          navigation.goBack();
+        } catch (e) {
+          console.error(e);
+          Alert.alert('Erreur', "Impossible de supprimer la publication.");
+        }
+      } }
+    ]);
+  };
+
+  const handleFinish = async () => {
+    try {
+      await setPublicationFinished(publication.id, true);
+      Alert.alert('Publication terminée', 'La publication a été marquée comme terminée.', [{ text: 'OK', onPress: () => navigation.goBack() }]);
+    } catch (e) {
+      console.error(e);
+      Alert.alert('Erreur', "Impossible de marquer la publication comme terminée.");
+    }
   };
 
   return (
@@ -49,7 +78,11 @@ export default function HomeDetails({ route, navigation }) {
       {/* 3. Action Fixe */}
       <DetailFooter 
         isHelpRequest={publication.isHelpRequest} 
-        onPress={handleActionPress} 
+        onPress={handleActionPress}
+        isOwner={isOwner}
+        onDelete={handleDelete}
+        onFinish={handleFinish}
+        isFinished={publication.isFinished}
       />
       
     </View>

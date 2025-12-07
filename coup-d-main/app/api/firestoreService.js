@@ -1,5 +1,5 @@
 import { db } from "./Firestore";
-import { getDoc , doc, updateDoc } from "firebase/firestore";
+import { getDoc , doc, updateDoc, deleteDoc } from "firebase/firestore";
 
 
 
@@ -25,6 +25,28 @@ export async function updateUserDocument(uid, fields) {
         return true;
     } catch (error) {
         console.error("Erreur updateUserDocument:", error);
+        throw error;
+    }
+}
+
+export async function deletePublication(pubId) {
+    try {
+        const ref = doc(db, "publications", pubId);
+        await deleteDoc(ref);
+        return true;
+    } catch (error) {
+        console.error("Erreur deletePublication:", error);
+        throw error;
+    }
+}
+
+export async function setPublicationFinished(pubId, finished = true) {
+    try {
+        const ref = doc(db, "publications", pubId);
+        await updateDoc(ref, { isFinished: finished });
+        return true;
+    } catch (error) {
+        console.error("Erreur setPublicationFinished:", error);
         throw error;
     }
 }

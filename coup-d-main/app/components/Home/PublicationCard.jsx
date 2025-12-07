@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 
-export default function PublicationCard({ item, onPress, hideActionWhenFinished = true, hideAction = false }) {
+export default function PublicationCard({ item, onPress, hideAction = false }) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
       <View style={styles.card}>
@@ -32,7 +32,7 @@ export default function PublicationCard({ item, onPress, hideActionWhenFinished 
             <Text style={styles.categoryText}>{item.categoryTitle}</Text>
           </View>
 
-          {!(hideAction || (hideActionWhenFinished && item.isFinished)) && (
+          {!(hideAction || (item.isFinished)) && (
             <TouchableOpacity style={styles.button} onPress={onPress}>
               <Text style={styles.buttonText}>
                 {item.isHelpRequest ? "Je m'engage" : "Demander"}

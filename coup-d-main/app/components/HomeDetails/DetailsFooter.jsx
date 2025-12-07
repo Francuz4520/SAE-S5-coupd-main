@@ -1,14 +1,29 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
-export default function DetailFooter({ isHelpRequest, onPress }) {
+export default function DetailFooter({ isHelpRequest, onPress, isOwner = false, onDelete, onFinish, isFinished = false }) {
+  // If current user is owner, show Delete + Finish buttons, else show Contact
   return (
     <View style={styles.footer}>
-      <TouchableOpacity style={styles.actionButton} onPress={onPress} activeOpacity={0.8}>
-        <Text style={styles.actionButtonText}>
-          {"Contacter"}
-        </Text>
-      </TouchableOpacity>
+      {isOwner ? (
+        <View style={styles.ownerRow}>
+          <TouchableOpacity style={[styles.ownerButton, styles.deleteButton]} onPress={onDelete} activeOpacity={0.8}>
+            <Text style={styles.ownerButtonText}>Supprimer</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.ownerButton, isFinished ? styles.finishDisabled : styles.finishButton]}
+            onPress={isFinished ? null : onFinish}
+            activeOpacity={0.8}
+            disabled={isFinished}
+          >
+            <Text style={styles.ownerButtonText}>{isFinished ? 'Terminé' : 'Terminer'}</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity style={styles.actionButton} onPress={onPress} activeOpacity={0.8}>
+          <Text style={styles.actionButtonText}>{"Contacter"}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -34,4 +49,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
   },
   actionButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+
+  ownerRow: { flexDirection: 'row', gap: 12 },
+  ownerButton: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center' },
+  deleteButton: { backgroundColor: '#e74c3c' },
+  finishButton: { backgroundColor: '#27ae60' },
+  finishDisabled: { backgroundColor: '#95a5a6' },
+  ownerButtonText: { color: 'white', fontWeight: '700' },
 });
