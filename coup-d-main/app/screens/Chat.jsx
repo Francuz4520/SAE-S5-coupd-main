@@ -83,7 +83,7 @@ export default function ChatScreen({navigation, route}) {
         return () => unsubscribe();
     }, [conversationId, newChat]);
 
-    const chatMembersFirstname = chatMembers.map(m => m.firstname).join(", ");
+    const chatMembersFullname = chatMembers.map(m => `${m.firstname} ${m.lastname}`).join(", ");
 
     const MessageInput = () => {
         const [text, setText] = useState("");
@@ -136,17 +136,17 @@ export default function ChatScreen({navigation, route}) {
         );
     }
 
-    if (chatMembersFirstname) {
+    if (chatMembersFullname) {
         return (
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
             >
                 <View style={styles.container}>
-                    <Banner text={`Conversation avec ${chatMembersFirstname}`} onBack={() => navigation.navigate("Home", {screen: "Messages"})} />
+                    <Banner text={`Conversation avec ${chatMembersFullname}`} onBack={() => navigation.navigate("Home", {screen: "Messages"})} />
                     {newChat ? (
                         <View style={styles.newConversationContainer}>
-                            <Text>Commencer la conversation avec {chatMembersFirstname}</Text>
+                            <Text>Commencer la conversation avec {chatMembersFullname}</Text>
                             <MessageInput />
                         </View>
                     ) : (
