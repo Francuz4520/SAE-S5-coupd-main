@@ -43,7 +43,6 @@ export async function getConversationDocumentByParticipants(participantIds) {
     try {
         const ref = collection(db, "conversations");
 
-        // 1 seul array-contains autorisé
         const q = query(ref, where("participants", "array-contains", participantIds[0]));
 
         const snap = await getDocs(q);
@@ -53,7 +52,6 @@ export async function getConversationDocumentByParticipants(participantIds) {
             ...doc.data(),
         }));
 
-        // Filtrage manuel côté JS
         const match = allMatches.find(conv =>
             conv.participants.length === participantIds.length &&
             participantIds.every(uid => conv.participants.includes(uid))
@@ -89,15 +87,14 @@ export function listenMessagesForConversation(conversationId, callback) {
 
 export async function createConversationDocument(participantsID, senderId, firstMessageText) {
     try {
-        // 1) Créer une conversation vide (pour générer son ID)
         const convRef = await addDoc(collection(db, "conversations"), {
             participants: participantsID,
-            lastMessage: null, // on ajoutera le message juste après
+            lastMessage: null,
+            updatedAt: serverTimestamp(),
         });
 
         const conversationId = convRef.id;
 
-        // 2) Ajouter le premier message dans la sous-collection messages/
         const msgRef = await addDoc(
             collection(db, "conversations", conversationId, "messages"),
             {
@@ -108,10 +105,9 @@ export async function createConversationDocument(participantsID, senderId, first
             }
         );
 
-        // 3) Mettre à jour lastMessage avec l'ID du message
         await setDoc(
             doc(db, "conversations", conversationId),
-            { lastMessage: msgRef.id },
+            { lastMessage: firstMessageText },
             { merge: true }
         );
     } catch (error) {
@@ -122,8 +118,6 @@ export async function createConversationDocument(participantsID, senderId, first
 
 export async function sendMessageToConversation(conversationId, senderId, text, type = "text") {
     try {
-        if (!conversationId || !senderId || !text) throw new Error("Paramètres manquants");
-
         const messagesRef = collection(db, "conversations", conversationId, "messages");
         const newMessage = {
             senderId,
@@ -136,11 +130,36 @@ export async function sendMessageToConversation(conversationId, senderId, text, 
         const conversationRef = doc(db, "conversations", conversationId);
         await updateDoc(conversationRef, {
             lastMessage: text,
-            updatedAt: serverTimestamp(),
         });
 
     } catch (error) {
         console.error("Erreur sendMessageToConversation:", error);
+        throw error;
+    }
+}
+
+export function listenUserConversations(userId, callback) {
+    try {
+        const conversationsRef = collection(db, "conversations");
+
+        const q = query(
+            conversationsRef,
+            where("participants", "array-contains", userId),
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const conversations = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+
+            callback(conversations);
+        });
+
+        return unsubscribe;
+
+    } catch (error) {
+        console.error("Erreur listenUserConversations:", error);
         throw error;
     }
 }

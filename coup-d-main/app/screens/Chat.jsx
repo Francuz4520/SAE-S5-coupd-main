@@ -10,7 +10,6 @@ export default function ChatScreen({navigation, route}) {
     const { interlocutors = null, conversationID = null } = route.params || {};
     const [newChat, setNewChat] = useState(conversationID ? false : true);
     const [conversationId, setConversationId] = useState(conversationID || null);
-    console.log("ChatScreen:", "newChat:", newChat);
     const [currentUserID, setCurrentUserID] = useState(null);
     const [messages, setMessages] = useState([]); 
     const [chatMembers, setChatMembers] = useState([]);
@@ -20,14 +19,11 @@ export default function ChatScreen({navigation, route}) {
         async function loadUsers() {
             try {
                 const user = JSON.parse(await AsyncStorage.getItem("user")) || getAuth().currentUser;
-                console.log("userID:", user.uid);
                 if (!user) {
                     console.error("Impossible de récupérer l'utilisateur.");
                     return;
                 }
-
                 setCurrentUserID(user.uid);
-
                 const interlocutorsData = await Promise.all(
                     (interlocutors || []).map(getUserDocument)
                 );
@@ -44,30 +40,38 @@ export default function ChatScreen({navigation, route}) {
 
     useEffect(() => {
         if (!currentUserID) return;
-
         async function loadConversation() {
             try {
                 let conversation = null;
-
                 if (conversationID) {
                     conversation = await getConversationDocument(conversationID);
-                } else if (interlocutors?.length > 0 && newChat) {
+                    if (conversation?.participants) {
+                        const otherUserIds = conversation.participants.filter(
+                            uid => uid !== currentUserID
+                        );
+
+                        const users = await Promise.all(
+                            otherUserIds.map(getUserDocument)
+                        );
+
+                        setChatMembers(users.filter(Boolean));
+                    }
+                }
+                else if (interlocutors && interlocutors.length > 0) {
                     const participantIds = [currentUserID, ...interlocutors];
                     conversation = await getConversationDocumentByParticipants(participantIds);
                 }
-
                 if (conversation) {
                     setConversationId(conversation.id);
                     setNewChat(false);
                 }
-
             } catch (error) {
                 console.error("Erreur loadConversation:", error);
             }
         }
 
         loadConversation();
-    }, [currentUserID, newChat]);
+    }, [currentUserID, conversationID, newChat]);
 
     useEffect(() => {
         if (newChat) return;
@@ -76,7 +80,6 @@ export default function ChatScreen({navigation, route}) {
         const unsubscribe = listenMessagesForConversation(conversationId, (msgs) => {
             setMessages(msgs);
         });
-
         return () => unsubscribe();
     }, [conversationId, newChat]);
 
@@ -84,7 +87,6 @@ export default function ChatScreen({navigation, route}) {
 
     const MessageInput = () => {
         const [text, setText] = useState("");
-
         const handleSend = () => {
             if (text.trim().length === 0) return;
             if (newChat && currentUserID && chatMembers.length > 0) {
@@ -109,10 +111,7 @@ export default function ChatScreen({navigation, route}) {
         };
 
         return (
-            <KeyboardAvoidingView 
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                style={styles.inputContainer}
-            >
+            <View style={styles.inputContainer}>
                 <View style={styles.innerContainer}>
                     <TextInput
                         style={styles.input}
@@ -121,12 +120,11 @@ export default function ChatScreen({navigation, route}) {
                         placeholder="Écrire un message..."
                         multiline
                     />
-
                     <TouchableOpacity onPress={handleSend} style={styles.button}>
                         <Text style={styles.buttonText}>Envoyer</Text>
                     </TouchableOpacity>
                 </View>
-            </KeyboardAvoidingView>
+            </View>
         );
     }
 
@@ -140,38 +138,41 @@ export default function ChatScreen({navigation, route}) {
 
     if (chatMembersFirstname) {
         return (
-            <View style={styles.container}>
-                <Banner text={`Conversation avec ${chatMembersFirstname}`} onBack={() => navigation.navigate("Home", {screen: "Messages"})} />
-                {newChat ? (
-                    <View style={styles.newConversationContainer}>
-                        <Text>Commencer la conversation avec {chatMembersFirstname}</Text>
-                        <MessageInput />
-                    </View>
-                ) : (
-                    <View style={{ flex: 1 }}>
-                        <FlatList
-                            data={messages}
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => (
-                                <MessageBubble 
-                                    message={item} 
-                                    currentUserMessage={item.senderId === currentUserID} 
-                                />
-                            )}
-                            contentContainerStyle={styles.messagesContainer}
-                            ref={(ref) => { flatListRef = ref }}
-                            onContentSizeChange={() => flatListRef?.scrollToEnd({ animated: true })}
-                            onLayout={() => flatListRef?.scrollToEnd({ animated: true })}
-                        />
-                        <MessageInput />
-                    </View>
-                )}
-            </View>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
+                <View style={styles.container}>
+                    <Banner text={`Conversation avec ${chatMembersFirstname}`} onBack={() => navigation.navigate("Home", {screen: "Messages"})} />
+                    {newChat ? (
+                        <View style={styles.newConversationContainer}>
+                            <Text>Commencer la conversation avec {chatMembersFirstname}</Text>
+                            <MessageInput />
+                        </View>
+                    ) : (
+                        <View style={{ flex: 1 }}>
+                            <FlatList
+                                data={messages}
+                                keyExtractor={(item) => item.id}
+                                renderItem={({ item }) => (
+                                    <MessageBubble 
+                                        message={item} 
+                                        currentUserMessage={item.senderId === currentUserID} 
+                                    />
+                                )}
+                                contentContainerStyle={styles.messagesContainer}
+                                ref={(ref) => { flatListRef = ref }}
+                                onContentSizeChange={() => flatListRef?.scrollToEnd({ animated: true })}
+                                onLayout={() => flatListRef?.scrollToEnd({ animated: true })}
+                            />
+                            <MessageInput />
+                        </View>
+                    )}
+                </View>
+            </KeyboardAvoidingView>
         );
     }
-
 }
-
 
 const styles = StyleSheet.create({
     container : {
@@ -182,6 +183,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        paddingBottom: 100,
     },
     inputContainer: {
         flex: 1,
@@ -189,7 +191,7 @@ const styles = StyleSheet.create({
         bottom: 20,
         width: "100%",
         backgroundColor: "#fff",
-        paddingVertical: 6,
+        paddingVertical: 10,
         borderTopWidth: 1,
         borderColor: "#ddd",
     },
@@ -227,17 +229,14 @@ const styles = StyleSheet.create({
         marginVertical: 6,
         borderRadius: 12,
     },
-
     currentUserMessage: {
         alignSelf: "flex-end",
         backgroundColor: "#ddd",
     },
-
     otherMessage: {
         alignSelf: "flex-start",
         backgroundColor: "#a8e6a1",
     },
-
     messageText: {
         fontSize: 15,
     },
