@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { collection, query, where, onSnapshot, Timestamp, getDoc, doc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, getDoc, doc } from "firebase/firestore";
 import { db } from "../config/firebase";
 import {formatDate } from "../utils/date";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getAuth} from "firebase/auth";
 
 export function usePublications() {
   const [data, setData] = useState([]);
@@ -32,9 +34,10 @@ export function usePublications() {
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       const tempItems = [];
       const userIdsToFetch = new Set();
-
+      const currentUser = JSON.parse(await AsyncStorage.getItem("user")) || getAuth().currentUser;
       snapshot.docs.forEach((doc) => {
         const item = doc.data();
+        if (item.idUser === currentUser.uid) return;
         tempItems.push({
           id: doc.id,
           ...item,
