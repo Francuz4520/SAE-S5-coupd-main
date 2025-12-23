@@ -9,65 +9,66 @@ import PublicationCard from '@/app/components/Home/PublicationCard';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { formatDate } from '../utils/date';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export default function ProfileScreen({navigation}) {
 
     const [user, setUser] = useState(null);
     const isFocused = useIsFocused();
     const [publications, setPublications] = useState([]);
     const [loadingPubs, setLoadingPubs] = useState(true);
+
     useEffect(() => {
+
         async function load() {
-            const current = auth.currentUser;
+            const current = JSON.parse(await AsyncStorage.getItem("user")) || auth.currentUser;
             if (!current) return;
 
-            const data = await getUserDocument(current.uid);
-            console.log("Données Firestore :", data);
-            setUser(data);
-        }
-        load();
-    }, [isFocused]);
+            const currentUser = await getUserDocument(current.uid);
+            setUser(currentUser);
 
-    useEffect(() => {
-        // load user's publications when profile is focused
-        const current = auth.currentUser;
-        if (!current) {
-            setPublications([]);
-            setLoadingPubs(false);
-            return;
-        }
+            if (!currentUser) {
+                setPublications([]);
+                setLoadingPubs(false);
+                return;
+            }
 
-        // first load categories to map id->title
-        let categoriesMap = {};
-        const unsubCategories = onSnapshot(collection(db, 'categories'), (snap) => {
-            const map = {};
-            snap.docs.forEach(d => { map[d.id] = d.data().title; });
-            categoriesMap = map;
-        });
-
-        const q = query(
-            collection(db, 'publications'),
-            where('idUser', '==', current.uid),
-            //where('isFinished', '==', true) si on veux que les publication terminer
-        );
-        setLoadingPubs(true);
-        const unsub = onSnapshot(q, async (snapshot) => {
-            const temp = snapshot.docs.map(d => {
-                const item = d.data();
-                return {
-                    id: d.id,
-                    ...item,
-                    formattedDate: formatDate(item.date),
-                    categoryTitle: categoriesMap[item.idCategory] || 'Inconnue'
-                };
+            // first load categories to map id->title
+            let categoriesMap = {};
+            const unsubCategories = onSnapshot(collection(db, 'categories'), (snap) => {
+                const map = {};
+                snap.docs.forEach(d => { map[d.id] = d.data().title; });
+                categoriesMap = map;
             });
-            setPublications(temp);
-            setLoadingPubs(false);
-        });
 
-        return () => {
-            unsub && unsub();
-            unsubCategories && unsubCategories();
-        };
+            const q = query(
+                collection(db, 'publications'),
+                where('idUser', '==', currentUser.id),
+                //where('isFinished', '==', true) si on veux que les publication terminer
+            );
+            setLoadingPubs(true);
+            const unsub = onSnapshot(q, async (snapshot) => {
+                const temp = snapshot.docs.map(d => {
+                    const item = d.data();
+                    return {
+                        id: d.id,
+                        ...item,
+                        formattedDate: formatDate(item.date),
+                        categoryTitle: categoriesMap[item.idCategory] || 'Inconnue'
+                    };
+                });
+                setPublications(temp);
+                setLoadingPubs(false);
+            });
+
+            return () => {
+                unsub && unsub();
+                unsubCategories && unsubCategories();
+            };
+        }
+
+        load();
+        
     }, [isFocused]);
 
     if(!user){
