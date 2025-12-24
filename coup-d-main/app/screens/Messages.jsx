@@ -1,6 +1,7 @@
 import { Text, View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { useEffect, useState } from "react";
 import { listenUserConversations, getUserDocument } from "../api/firestoreService";
+import { getAuth} from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function MessagesScreen({ navigation }) {
