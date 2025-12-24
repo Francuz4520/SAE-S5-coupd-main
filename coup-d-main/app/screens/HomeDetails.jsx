@@ -1,6 +1,7 @@
 
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { View, ScrollView, StyleSheet, Alert } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import DetailHeader from "../components/HomeDetails/DetailsHeader";
 import DetailHero from "../components/HomeDetails/DetailsHero";
@@ -14,6 +15,15 @@ import { deletePublication, setPublicationFinished } from '../api/firestoreServi
 export default function HomeDetails({ route, navigation }) {
   // On récupère la donnée
   const { publication } = route.params;
+  const [isOwner, setIsOwner] = useState(false);
+
+  useEffect(() => {
+    async function checkIsOwner() {
+      const isOwner = (JSON.parse(await AsyncStorage.getItem("user")) || auth.currentUser) && publication.idUser === auth.currentUser.uid;
+      setIsOwner(isOwner);
+    }
+    checkIsOwner();
+  }, []);
 
   const displayDate = publication.formattedDate || formatDate(publication.date);
 
@@ -23,8 +33,6 @@ export default function HomeDetails({ route, navigation }) {
     console.log("ID de l'auteur :", publication.idUser);
     navigation.navigate('Chat', { interlocutors: [publication.idUser] });
   };
-
-  const isOwner = auth.currentUser && publication.idUser === auth.currentUser.uid;
 
   const handleDelete = () => {
     Alert.alert('Supprimer', 'Voulez-vous vraiment supprimer cette publication ?', [

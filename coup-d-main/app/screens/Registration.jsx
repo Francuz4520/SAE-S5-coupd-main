@@ -1,6 +1,6 @@
 import {View, Image, StyleSheet, Text, TextInput, Pressable, KeyboardAvoidingView, ScrollView, Platform} from "react-native"
 import { useState, useEffect } from "react";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential} from "firebase/auth";
 import { Checkbox } from 'expo-checkbox';
 import { doc, setDoc, getFirestore, loadBundle } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
@@ -10,6 +10,10 @@ import {useSafeAreaInsets } from "react-native-safe-area-context";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CitySelector from "../components/CitySelector"
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Google from 'expo-auth-session/providers/google';
+import { auth } from "../config/firebase";
+import * as AuthSession from "expo-auth-session";
+
 
 
 export default function RegistrationScreen({route, navigation}){
@@ -25,7 +29,6 @@ export default function RegistrationScreen({route, navigation}){
     const [phoneNumber, setPhoneNumber] = useState("");
     const [errors, setErrors] = useState({});
     const [cities, setCities] = useState([]);
-    const insets = useSafeAreaInsets();
     const [cgu, setCgu] = useState(false);
     const [stayConnected, setStayConnected] = useState(false);
 
@@ -150,7 +153,31 @@ export default function RegistrationScreen({route, navigation}){
     }
 
     
-    
+    const [request, response, promptAsync] = Google.useAuthRequest({
+        androidClientId: "51236011687-k2o40fmkcrre60uurfh57qq726rgrksc.apps.googleusercontent.com",
+        iosClientId: "51236011687-k2o40fmkcrre60uurfh57qq726rgrksc.apps.googleusercontent.com",
+        webClientId: "51236011687-k2o40fmkcrre60uurfh57qq726rgrksc.apps.googleusercontent.com",
+    });
+
+    useEffect(() => {
+        
+        console.log("Réponse Google :", response);
+        if (response?.type === "success") {
+        const { id_token } = response.params;
+
+        // Convertir le token Google en utilisateur Firebase
+        const credential = GoogleAuthProvider.credential(id_token);
+        signInWithCredential(auth, credential)
+        .then((userCredential) => {
+            console.log("Connecté à Firebase :", userCredential.user);
+        })
+        .catch((error) => {
+            console.error("Erreur Firebase :", error);
+        });
+
+        }
+    }, [response]);
+   
     return(
        <SafeAreaView style={{ flex: 1 }}>
             <KeyboardAvoidingView
@@ -167,7 +194,7 @@ export default function RegistrationScreen({route, navigation}){
             >
                 <Image style={styles.logo}source={require("../../assets/images/logo_coup-dmain.png")} />
                 <Text style={styles.title}>Créer un compte</Text>
-                <Pressable style={styles.btnGoogle}>
+                <Pressable style={styles.btnGoogle} onPress={() => promptAsync()} disabled={!request}>
                     <Image style={styles.logoGoogle}source={require("../../assets/images/logo_google.png")}></Image>
                     <Text>Continuer avec Google</Text>
                 </Pressable>
