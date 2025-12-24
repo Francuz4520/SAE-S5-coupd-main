@@ -1,4 +1,4 @@
-import {Text, View, StyleSheet, Image, TouchableOpacity, FlatList} from "react-native";
+import {Text, View, StyleSheet, Image, TouchableOpacity, FlatList, Alert} from "react-native";
 import { useEffect, useState } from "react";
 import { useIsFocused } from '@react-navigation/native';
 import { auth } from "../api/Firestore";
@@ -71,6 +71,22 @@ export default function ProfileScreen({navigation}) {
         
     }, [isFocused]);
 
+    const confirmSignout = () => {Alert.alert(
+        'Confirmation',
+        'Voulez-vous vraiment vous déconnecter ?',
+        [
+            { text: 'Annuler', style: 'cancel' },
+            { text: 'Oui', onPress: signout },
+        ]
+        );
+    }
+
+    async function signout(){
+        await AsyncStorage.removeItem('user');
+        navigation.navigate("Connection")
+    }
+
+
     if(!user){
         return (
             <View>
@@ -107,7 +123,12 @@ export default function ProfileScreen({navigation}) {
         >
             <Text style={styles.editButtonText}>Modifier mon profil</Text>
         </TouchableOpacity>
-
+        <TouchableOpacity
+            style={styles.signoutButton}
+            onPress={confirmSignout}
+        >
+            <Text style={styles.signoutButtonText}>Se déconnecter</Text>
+        </TouchableOpacity>
         <View style={{marginTop:16, paddingHorizontal:15}}>
             <Text style={{fontWeight:'700', marginBottom:8}}>Mes publications</Text>
             {loadingPubs && <Text>Chargement des publications...</Text>}
@@ -166,4 +187,18 @@ const styles = StyleSheet.create({
         fontWeight: "semibold",
         textAlign: "center"
     },
+    signoutButton: {
+        backgroundColor: "red",
+        paddingVertical: 12,
+        paddingHorizontal: 25,
+        borderRadius: 25,
+        marginTop: 5,
+    },
+    signoutButtonText: {
+        color: "#fff",
+        fontSize: 16,
+        fontWeight: "semibold",
+        textAlign: "center"
+    },
+
 });
