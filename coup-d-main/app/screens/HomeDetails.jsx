@@ -19,7 +19,8 @@ export default function HomeDetails({ route, navigation }) {
 
   useEffect(() => {
     async function checkIsOwner() {
-      const isOwner = (JSON.parse(await AsyncStorage.getItem("user")) || auth.currentUser) && publication.idUser === auth.currentUser.uid;
+      const user = JSON.parse(await AsyncStorage.getItem("user")) || auth.currentUser;
+      const isOwner = publication.idUser === user.uid;
       setIsOwner(isOwner);
     }
     checkIsOwner();
