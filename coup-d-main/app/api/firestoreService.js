@@ -1,7 +1,7 @@
 import { db } from "./Firestore";
-import { getDoc , getDocs , doc, updateDoc, collection, query, where, onSnapshot, orderBy, setDoc, addDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
+import { getDoc , getDocs , doc, updateDoc, collection, query, where, onSnapshot, orderBy, setDoc, addDoc, serverTimestamp, deleteDoc, writeBatch} from "firebase/firestore";
 
-
+// --- USERS ---
 
 export async function getUserDocument(uid) {
     try {
@@ -29,6 +29,20 @@ export async function updateUserDocument(uid, fields) {
     }
 }
 
+
+// --- PUBLICATIONS ---
+
+export async function getPublicationDocument(pubId) {
+    try {
+        const ref = doc(db, "publications", pubId);
+        const snap = await getDoc(ref);
+        return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+    } catch (error) {
+        console.error("Erreur getPublicationDocument:", error);
+        throw error;
+    }
+}
+
 export async function deletePublication(pubId) {
     try {
         const ref = doc(db, "publications", pubId);
@@ -40,16 +54,35 @@ export async function deletePublication(pubId) {
     }
 }
 
-export async function setPublicationFinished(pubId, finished = true) {
+export async function updatePublicationState(pubId, newState) {
     try {
         const ref = doc(db, "publications", pubId);
-        await updateDoc(ref, { isFinished: finished });
+        await updateDoc(ref, { state: newState }); 
         return true;
     } catch (error) {
-        console.error("Erreur setPublicationFinished:", error);
+        console.error("Erreur updatePublicationState:", error);
         throw error;
     }
 }
+
+export function listenPublication(pubId, callback) {
+    if (!pubId) return () => {};
+
+    const ref = doc(db, "publications", pubId);
+
+    const unsubscribe = onSnapshot(ref, (snap) => {
+        if (snap.exists()) {
+            callback({ id: snap.id, ...snap.data() });
+        } else {
+            callback(null);
+        }
+    });
+
+    return unsubscribe;
+}
+
+
+// --- CONVERSATIONS ---
 
 export async function getConversationDocument(conversationId) {
     try {
@@ -94,7 +127,7 @@ export function listenMessagesForConversation(conversationId, callback) {
 
     const q = query(
         collection(db, "conversations", conversationId, "messages"),
-        orderBy("createdAt", "asc")
+        orderBy("createdAt", "desc")
     );
 
     const unsubscribe = onSnapshot(q, snapshot => {
@@ -108,12 +141,13 @@ export function listenMessagesForConversation(conversationId, callback) {
     return unsubscribe;
 }
 
-export async function createConversationDocument(participantsID, senderId, firstMessageText) {
+export async function createConversationDocument(participantsID, senderId, firstMessageText, publicationId = null) {
     try {
         const convRef = await addDoc(collection(db, "conversations"), {
             participants: participantsID,
             lastMessage: null,
             updatedAt: serverTimestamp(),
+            publicationId: publicationId,
         });
 
         const conversationId = convRef.id;

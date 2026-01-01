@@ -10,7 +10,8 @@ import DetailFooter from "../components/HomeDetails/DetailsFooter";
 
 import { formatDate } from "../utils/date";
 import { auth } from '../api/Firestore';
-import { deletePublication, setPublicationFinished } from '../api/firestoreService';
+import { deletePublication, updatePublicationState } from '../api/firestoreService';
+import { PUB_STATES } from "../constants/states";
 
 export default function HomeDetails({ route, navigation }) {
   // On récupère la donnée
@@ -32,7 +33,7 @@ export default function HomeDetails({ route, navigation }) {
   const handleActionPress = () => {
     console.log("Action sur la publication :", publication.id);
     console.log("ID de l'auteur :", publication.idUser);
-    navigation.navigate('Chat', { interlocutors: [publication.idUser] });
+    navigation.navigate("Chat", { interlocutors: [publication.idUser], publicationID: publication.id});
   };
 
   const handleDelete = () => {
@@ -52,7 +53,7 @@ export default function HomeDetails({ route, navigation }) {
 
   const handleFinish = async () => {
     try {
-      await setPublicationFinished(publication.id, true);
+      await updatePublicationState(publication.id, PUB_STATES.FINISHED);
       Alert.alert('Publication terminée', 'La publication a été marquée comme terminée.', [{ text: 'OK', onPress: () => navigation.goBack() }]);
     } catch (e) {
       console.error(e);
@@ -93,7 +94,7 @@ export default function HomeDetails({ route, navigation }) {
         isOwner={isOwner}
         onDelete={handleDelete}
         onFinish={handleFinish}
-        isFinished={publication.isFinished}
+        state={publication.state}
       />
       
     </View>

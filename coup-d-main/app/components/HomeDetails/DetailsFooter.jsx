@@ -1,7 +1,10 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { PUB_STATES } from "../../constants/states";
 
-export default function DetailFooter({ isHelpRequest, onPress, isOwner = false, onDelete, onFinish, isFinished = false }) {
+export default function DetailFooter({ isHelpRequest, onPress, isOwner = false, onDelete, onFinish, state}) {
+  const isFinished = state === PUB_STATES.FINISHED;
+
   // If current user is owner, show Delete + Finish buttons, else show Contact
   return (
     <View style={styles.footer}>
@@ -20,8 +23,15 @@ export default function DetailFooter({ isHelpRequest, onPress, isOwner = false, 
           </TouchableOpacity>
         </View>
       ) : (
-        <TouchableOpacity style={styles.actionButton} onPress={onPress} activeOpacity={0.8}>
-          <Text style={styles.actionButtonText}>{"Contacter"}</Text>
+        <TouchableOpacity 
+            style={[styles.actionButton, isFinished && styles.actionDisabled]} 
+            onPress={isFinished ? null : onPress} 
+            activeOpacity={0.8}
+            disabled={isFinished}
+        >
+          <Text style={styles.actionButtonText}>
+            {isFinished ? "Publication terminée" : "Contacter"}
+          </Text>
         </TouchableOpacity>
       )}
     </View>
@@ -47,6 +57,10 @@ const styles = StyleSheet.create({
     shadowColor: "#29AAAB",
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 4 },
+  },
+  actionDisabled: {
+      backgroundColor: "#bdc3c7",
+      elevation: 0
   },
   actionButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
 

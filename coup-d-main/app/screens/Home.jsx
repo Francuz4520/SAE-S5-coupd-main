@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { View, FlatList, StyleSheet, Keyboard } from "react-native";
 import { usePublications } from "../hooks/usePublications";
 import SearchHeader from "../components/Home/SearchHeader";
 import PublicationCard from "../components/Home/PublicationCard";
+import { PUB_STATES } from "../constants/states";
 
 export default function HomeScreen({ navigation }) {
   // 1. Données
@@ -19,10 +20,13 @@ export default function HomeScreen({ navigation }) {
 
   // 3. Logique de filtrage
   const filteredData = useMemo(() => {
-    // Si aucun filtre appliqué, on prend tout
-    if (!appliedFilters) return data;
+    // 1. Premier niveau de filtre : On ne veut QUE les status "open"
+    const openData = data.filter(item => item.state === PUB_STATES.OPEN);
 
-    return data.filter((item) => {
+    // Si aucun filtre utilisateur appliqué, on retourne les données ouvertes
+    if (!appliedFilters) return openData;
+
+    return openData.filter((item) => {
       const { type, category, address } = appliedFilters;
       
       // Filtre Type

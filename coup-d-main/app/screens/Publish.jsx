@@ -11,6 +11,7 @@ import {
   addDoc,
   serverTimestamp,
 } from "firebase/firestore";
+import { PUB_STATES } from "../constants/states";
 
 export default function PublishScreen(){
   const [type, setType] = useState("request")
@@ -94,7 +95,7 @@ export default function PublishScreen(){
         description: description.trim(),
         date: serverTimestamp(),
         isHelpRequest: type === "request",
-        isFinished: false,
+        state: PUB_STATES.OPEN,
 	      image: imageUrl,
         idCategory: categoryId,
         idUser: user.uid,
