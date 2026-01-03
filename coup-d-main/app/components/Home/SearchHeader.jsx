@@ -6,6 +6,7 @@ export default function SearchHeader({
   filterType, setFilterType, 
   filterAddress, setFilterAddress, 
   filterCategory, setFilterCategory,
+  searchText, setSearchText,
   categoriesList, 
   onApply, onReset 
 }) {
@@ -50,6 +51,15 @@ export default function SearchHeader({
     <View style={styles.panel}>
       <Text style={styles.title}>Filtrer les {filterType === 'offer' ? "offres" : "demandes"}</Text>
       
+      {/* 1. NOUVEAU CHAMP RECHERCHE SÉMANTIQUE */}
+      <TextInput 
+        placeholder="Objet, outil, service... (ex: cisaille)" 
+        style={styles.input} 
+        value={searchText} 
+        onChangeText={setSearchText} 
+      />
+
+      {/* 2. CHAMP VILLE EXISTANT */}
       <TextInput 
         placeholder="Ville..." 
         style={styles.input} 

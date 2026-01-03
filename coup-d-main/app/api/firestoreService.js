@@ -152,21 +152,23 @@ export async function createConversationDocument(participantsID, senderId, first
 
         const conversationId = convRef.id;
 
-        const msgRef = await addDoc(
-            collection(db, "conversations", conversationId, "messages"),
-            {
-                senderId,
-                text: firstMessageText,
-                type: "text",
-                createdAt: serverTimestamp(),
-            }
-        );
+        await addDoc(collection(db, "conversations", conversationId, "messages"), {
+            senderId,
+            text: firstMessageText,
+            type: "text",
+            createdAt: serverTimestamp(),
+        });
 
         await setDoc(
             doc(db, "conversations", conversationId),
-            { lastMessage: firstMessageText },
+            { 
+                lastMessage: firstMessageText,
+                lastMessageSenderId: senderId,
+                updatedAt: serverTimestamp(),
+             },
             { merge: true }
         );
+        return { id: conversationId, publicationId };
     } catch (error) {
         console.error("Erreur createConversation:", error);
         throw error;
@@ -187,6 +189,8 @@ export async function sendMessageToConversation(conversationId, senderId, text, 
         const conversationRef = doc(db, "conversations", conversationId);
         await updateDoc(conversationRef, {
             lastMessage: text,
+            lastMessageSenderId: senderId,
+            updatedAt: serverTimestamp(),
         });
 
     } catch (error) {

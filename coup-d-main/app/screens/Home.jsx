@@ -5,6 +5,8 @@ import SearchHeader from "../components/Home/SearchHeader";
 import PublicationCard from "../components/Home/PublicationCard";
 import { PUB_STATES } from "../constants/states";
 
+import { expandSearchTerm, matchSemantic } from "../utils/synonymsDict";
+
 export default function HomeScreen({ navigation }) {
   // 1. Données
   const { data, categoriesList, loading } = usePublications();
@@ -14,31 +16,48 @@ export default function HomeScreen({ navigation }) {
   const [filterType, setFilterType] = useState(null);
   const [filterAddress, setFilterAddress] = useState("");
   const [filterCategory, setFilterCategory] = useState(null);
+  const [searchText, setSearchText] = useState("");
   
   // État pour stocker les filtres appliqués
   const [appliedFilters, setAppliedFilters] = useState(null);
 
   // 3. Logique de filtrage
   const filteredData = useMemo(() => {
-    // 1. Premier niveau de filtre : On ne veut QUE les status "open"
+    // 1. Filtrer les publications ouvertes
     const openData = data.filter(item => item.state === PUB_STATES.OPEN);
 
-    // Si aucun filtre utilisateur appliqué, on retourne les données ouvertes
     if (!appliedFilters) return openData;
 
     return openData.filter((item) => {
-      const { type, category, address } = appliedFilters;
+      // Récupération des filtres
+      const { type, category, address, text } = appliedFilters;
       
-      // Filtre Type
+      // 1. Filtre Type
       const typeMatch = type === 'request' ? item.isHelpRequest : !item.isHelpRequest;
-      // Filtre Catégorie
+      
+      // 2. Filtre Catégorie
       const catMatch = category ? item.idCategory === category : true;
-      // Filtre Adresse
+      
+      // 3. Filtre Adresse
       const addrMatch = address 
         ? (item.authorCity || "").toLowerCase().includes(address.toLowerCase())
         : true;
 
-      return typeMatch && catMatch && addrMatch;
+      // 4. Filtre Sémantique
+      let textMatch = true;
+      if (text && text.trim().length > 0) {
+        // A. On étend le terme
+        const semanticTerms = expandSearchTerm(text);
+        
+        // B. On cherche dans le titre ET la description
+        // On combine titre et description pour une recherche unique
+        const contentToSearch = (item.title + " " + (item.description || "")).toLowerCase();
+        
+        // C. Vérification
+        textMatch = matchSemantic(contentToSearch, semanticTerms);
+      }
+
+      return typeMatch && catMatch && addrMatch && textMatch;
     });
   }, [data, appliedFilters]);
 
@@ -47,7 +66,8 @@ export default function HomeScreen({ navigation }) {
     setAppliedFilters({
       type: filterType,
       category: filterCategory,
-      address: filterAddress
+      address: filterAddress,
+      text: searchText
     });
     setSearchStep(0);
     Keyboard.dismiss();
@@ -58,6 +78,7 @@ export default function HomeScreen({ navigation }) {
     setFilterType(null);
     setFilterAddress("");
     setFilterCategory(null);
+    setSearchText("");
     setAppliedFilters(null);
   };
 
@@ -74,6 +95,8 @@ export default function HomeScreen({ navigation }) {
           setFilterAddress={setFilterAddress}
           filterCategory={filterCategory}
           setFilterCategory={setFilterCategory}
+          searchText={searchText}
+          setSearchText={setSearchText}
           categoriesList={categoriesList}
           onApply={handleApplySearch}
           onReset={handleResetSearch}
