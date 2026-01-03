@@ -75,11 +75,11 @@ export default function RegistrationScreen({route, navigation}){
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            registerInformations(user.uid);
+            await registerInformations(user.uid);
 
             console.log("Utilisateur créé", user.email);
-            if(stayConnected) AsyncStorage.setItem("user", JSON.stringify(user));
-            navigation.navigate("Home");
+            if(stayConnected) await AsyncStorage.setItem("user", JSON.stringify(user));
+            navigation.replace("AvatarPicker", {uid: user.uid});
 
         } catch (error) {
             let errors = {};
@@ -144,7 +144,7 @@ export default function RegistrationScreen({route, navigation}){
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const cityNormalized = normalizeCityName(city)
-        const fields = {firstname, lastname, username, dateOfBirth, cityNormalized}
+        const fields = { firstname, lastname, username, dateOfBirth, cityNormalized, avatarKey: "a1" };
         if(phoneNumber !== "") fields.phoneNumber = phoneNumber;
                     
         await setDoc(doc(db, "users", id), 

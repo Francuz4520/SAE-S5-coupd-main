@@ -148,6 +148,13 @@ export default function EditProfile() {
                 <TextInput style={styles.input} value={phoneNumber} onChangeText={setPhoneNumber} inputMode="tel" />
                 {errors.phoneNumber && <Text style={styles.textError}>{errors.phoneNumber}</Text>}
 
+                <Pressable
+                    style={styles.changeAvatarBtn}
+                    onPress={() => navigation.navigate("AvatarPicker", { uid: auth.currentUser.uid, returnTo: "EditProfile" })}
+                >
+                    <Text style={styles.changeAvatarBtnText}>Changer d’avatar</Text>
+                </Pressable>
+
                 <Pressable style={styles.btnSave} onPress={handleSave}><Text style={styles.btnSaveText}>Enregistrer</Text></Pressable>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -176,5 +183,21 @@ const styles = StyleSheet.create({
     textError: { color: 'red', marginBottom: 10 },
     iconContainer: { position: 'absolute', alignSelf: 'flex-end', right: 3, top: 5 },
     icon: { width: 28, height: 28 },
-    sectionTitle: { marginTop: 10, marginBottom: 4, marginHorizontal:5, }
+    sectionTitle: { marginTop: 10, marginBottom: 4, marginHorizontal:5, },
+
+    changeAvatarBtn: {
+        backgroundColor: "#EAF7F7",
+        paddingVertical: 12,
+        paddingHorizontal: 25,
+        borderRadius: 25,
+        marginTop: 10,
+        borderWidth: 1,
+        borderColor: "#BFE7E7",
+    },
+    changeAvatarBtnText: {
+        color: "#177A7B",
+        fontSize: 16,
+        fontWeight: "700",
+        textAlign: "center",
+        },
 });

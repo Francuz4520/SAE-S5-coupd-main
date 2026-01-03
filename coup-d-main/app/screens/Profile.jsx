@@ -10,6 +10,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { formatDate } from '../utils/date';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import DefaultAvatar from "../components/DefaultAvatar";
 
 export default function ProfileScreen({navigation}) {
 
@@ -102,14 +103,7 @@ export default function ProfileScreen({navigation}) {
 
         <View style={styles.profileRow}>
             {/* Avatar */}
-            <Image
-                source={{
-                    uri: user.avatarUrl
-                        ? user.avatarUrl
-                        : "https://i.pravatar.cc/150",
-                }}
-                style={styles.avatar}
-            />
+            <DefaultAvatar avatarKey={user.avatarKey} size={100} /> 
 
             {/* Infos utilisateur */}
             <View style={styles.infoContainer}>
