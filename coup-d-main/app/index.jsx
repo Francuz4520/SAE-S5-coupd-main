@@ -40,7 +40,7 @@ const Tabs = () => {
     <Tab.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: '#29AAAB',}}>
 
       <Tab.Screen 
-        name="Home" 
+        name="Accueil" 
         component={HomeScreen} 
         options={{
           tabBarIcon: ({ size }) => (
@@ -53,7 +53,7 @@ const Tabs = () => {
       />
 
       <Tab.Screen 
-        name="Publish"
+        name="Publier"
         component={PublishScreen} 
         options={{
           tabBarIcon: ({ size }) => (
@@ -79,7 +79,7 @@ const Tabs = () => {
       />
 
       <Tab.Screen 
-        name="Profile"
+        name="Profil"
         component={ProfileScreen} 
         options={{
           tabBarIcon: ({ size }) => (
