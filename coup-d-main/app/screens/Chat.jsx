@@ -58,6 +58,7 @@ export default function ChatScreen({navigation, route}) {
         async function loadConversation() {
             try {
                 let conversation = null;
+
                 if (conversationID) {
                     conversation = await getConversationDocument(conversationID);
                     
@@ -73,7 +74,7 @@ export default function ChatScreen({navigation, route}) {
                     }
                 } else if (interlocutors && interlocutors.length > 0) {
                     const participantIds = [currentUserID, ...interlocutors];
-                    conversation = await getConversationDocumentByParticipants(participantIds);
+                    conversation = await getConversationDocumentByParticipants(participantIds, publicationID);
                 }
                 
                 if (conversation) {
@@ -83,6 +84,9 @@ export default function ChatScreen({navigation, route}) {
                     if (conversation.publicationId && !activePubId) {
                          setActivePubId(conversation.publicationId);
                     }
+                } else {
+                    setNewChat(true);
+                    setConversationId(null);
                 }
             } catch (error) {
                 console.error("Erreur loadConversation:", error);

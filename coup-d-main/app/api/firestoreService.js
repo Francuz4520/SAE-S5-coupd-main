@@ -95,7 +95,7 @@ export async function getConversationDocument(conversationId) {
     }
 }
 
-export async function getConversationDocumentByParticipants(participantIds) {
+export async function getConversationDocumentByParticipants(participantIds, publicationId = null) {
     try {
         const ref = collection(db, "conversations");
 
@@ -108,12 +108,19 @@ export async function getConversationDocumentByParticipants(participantIds) {
             ...doc.data(),
         }));
 
-        const match = allMatches.find(conv =>
-            conv.participants.length === participantIds.length &&
-            participantIds.every(uid => conv.participants.includes(uid))
-        );
+        const match = allMatches.find(conv => {
+            const hasSameParticipants = 
+                conv.participants.length === participantIds.length &&
+                participantIds.every(uid => conv.participants.includes(uid));
 
-        console.log("match:", match);
+            if (publicationId) {
+                return hasSameParticipants && conv.publicationId === publicationId;
+            }
+
+            return hasSameParticipants;
+        });
+
+        console.log("match trouvé :", match ? match.id : "aucun");
         return match || null;
 
     } catch (error) {

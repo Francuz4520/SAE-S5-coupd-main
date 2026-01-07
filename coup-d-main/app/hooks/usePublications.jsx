@@ -29,7 +29,7 @@ export function usePublications() {
 
   // 2. Charger les publications et les villes
   useEffect(() => {
-    const q = query(collection(db, "publications"), where("isFinished", "==", false));
+    const q = query(collection(db, "publications"), where("state", "==", "open"));
 
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       const tempItems = [];
