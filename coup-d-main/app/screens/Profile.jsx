@@ -1,6 +1,6 @@
 import {Text, View, StyleSheet, Image, TouchableOpacity, FlatList, Alert} from "react-native";
 import { useEffect, useState } from "react";
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused ,CommonActions} from '@react-navigation/native';
 import { auth } from "../api/Firestore";
 import { getUserDocument } from "../api/firestoreService";
 import Banner from "@/app/components/Banner";
@@ -11,6 +11,9 @@ import { db } from '../config/firebase';
 import { formatDate } from '../utils/date';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DefaultAvatar from "../components/DefaultAvatar";
+import {  signOut } from "firebase/auth";
+
+
 
 export default function ProfileScreen({navigation}) {
 
@@ -83,8 +86,19 @@ export default function ProfileScreen({navigation}) {
     }
 
     async function signout(){
+        signOut(auth).then(() => {
+            console.log("Utilisateur déconnecté")
+        }).catch((error) => {
+            console.log("Erreur dans la déconnexion", error)
+        });
         await AsyncStorage.removeItem('user');
-        navigation.navigate("Connection")
+
+        navigation.dispatch(
+            CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'Connection' }],
+        })
+  );
     }
 
 
@@ -182,7 +196,7 @@ const styles = StyleSheet.create({
         textAlign: "center"
     },
     signoutButton: {
-        backgroundColor: "#e74c3c",
+        backgroundColor: "red",
         paddingVertical: 12,
         paddingHorizontal: 25,
         borderRadius: 25,
