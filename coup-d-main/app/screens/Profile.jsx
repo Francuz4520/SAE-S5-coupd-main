@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
         textAlign: "center"
     },
     signoutButton: {
-        backgroundColor: "red",
+        backgroundColor: "#e74c3c",
         paddingVertical: 12,
         paddingHorizontal: 25,
         borderRadius: 25,
