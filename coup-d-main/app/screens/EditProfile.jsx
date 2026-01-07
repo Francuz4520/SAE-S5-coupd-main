@@ -6,7 +6,7 @@ import CitySelector from "../components/CitySelector";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { auth } from '../api/Firestore';
 import { getUserDocument, updateUserDocument } from '../api/firestoreService';
-import { triggerAutoComplete, cityExists } from '../utils/handleCities';
+import triggerAutoComplete, { cityExists } from '../utils/handleCities';
 
 export default function EditProfile() {
     const navigation = useNavigation();
