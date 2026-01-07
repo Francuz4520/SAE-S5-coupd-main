@@ -143,8 +143,8 @@ export default function RegistrationScreen({route, navigation}){
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const cityNormalized = normalizeCityName(city)
-        const fields = { firstname, lastname, username, dateOfBirth, cityNormalized, avatarKey: "a1" };
+        const cityNormalize = normalizeCityName(city)
+        const fields = { firstname, lastname, username, dateOfBirth, city: cityNormalize, avatarKey: "a1" };
         if(phoneNumber !== "") fields.phoneNumber = phoneNumber;
                     
         await setDoc(doc(db, "users", id), 

@@ -2,6 +2,7 @@
 
 # dependencies
 node_modules/
+**/node_modules/
 
 # vscode
 .vscode/
@@ -44,3 +45,6 @@ app-example
 # generated native folders
 /ios
 /android
+
+# private key firebase admin
+serviceAccountKey.json

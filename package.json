@@ -1,0 +1,24 @@
+{
+  "name": "sae-s5-coupd-main",
+  "version": "1.0.0",
+  "description": "Pour installer les dépendances (à faire après chaque pull):  \r ```npm install``` - ```npx expo install```",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Francuz4520/SAE-S5-coupd-main.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Francuz4520/SAE-S5-coupd-main/issues"
+  },
+  "homepage": "https://github.com/Francuz4520/SAE-S5-coupd-main#readme",
+  "dependencies": {
+    "@faker-js/faker": "^10.2.0",
+    "firebase-admin": "^13.6.0"
+  }
+}
