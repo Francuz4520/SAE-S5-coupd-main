@@ -40,7 +40,7 @@ export default function PublicationCard({ item, onPress, hideAction = false }) {
           {(!hideAction && isOpen) && (
             <TouchableOpacity style={styles.button} onPress={onPress}>
               <Text style={styles.buttonText}>
-                {item.isHelpRequest ? "Je m'engage" : "Demander"}
+                {"En savoir plus"}
               </Text>
             </TouchableOpacity>
           )}

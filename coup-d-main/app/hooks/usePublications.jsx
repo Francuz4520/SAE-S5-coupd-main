@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { collection, query, where, onSnapshot, getDoc, doc } from "firebase/firestore";
 import { db } from "../config/firebase";
-import {formatDate } from "../utils/date";
+import { formatDate } from "../utils/date";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getAuth} from "firebase/auth";
+import { getAuth } from "firebase/auth";
 
 export function usePublications() {
-  const [data, setData] = useState([]);
+  const [rawPublications, setRawPublications] = useState([]); 
   const [categories, setCategories] = useState({});
   const [categoriesList, setCategoriesList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,17 +34,25 @@ export function usePublications() {
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       const tempItems = [];
       const userIdsToFetch = new Set();
-      const currentUser = JSON.parse(await AsyncStorage.getItem("user")) || getAuth().currentUser;
+      
+      let currentUser;
+      try {
+         const jsonUser = await AsyncStorage.getItem("user");
+         currentUser = jsonUser ? JSON.parse(jsonUser) : getAuth().currentUser;
+      } catch (e) {
+         currentUser = getAuth().currentUser;
+      }
+      
+      const currentUid = currentUser?.uid;
+
       snapshot.docs.forEach((doc) => {
         const item = doc.data();
-        if (item.idUser === currentUser.uid) return;
+        if (currentUid && item.idUser === currentUid) return;
+
         tempItems.push({
           id: doc.id,
           ...item,
-          // On prépare la date ici
           formattedDate: formatDate(item.date),
-          // On prépare le titre de catégorie ici
-          categoryTitle: categories[item.idCategory] || "Inconnue",
         });
         if (item.idUser) userIdsToFetch.add(item.idUser);
       });
@@ -62,18 +70,26 @@ export function usePublications() {
         })
       );
 
-      // Fusion finale : on injecte la ville directement dans l'item
+      // Fusion finale avec les villes
       const enrichedList = tempItems.map(item => ({
         ...item,
         authorCity: citiesMap[item.idUser] || ""
       }));
 
-      setData(enrichedList);
+      setRawPublications(enrichedList);
       setLoading(false);
     });
 
     return unsubscribe;
-  }, [categories]);
+  }, []);
+
+  // 3. FUSION DYNAMIQUE 
+  const data = useMemo(() => {
+    return rawPublications.map(item => ({
+      ...item,
+      categoryTitle: categories[item.idCategory] || "..." 
+    }));
+  }, [rawPublications, categories]);
 
   return { data, categoriesList, loading };
 }

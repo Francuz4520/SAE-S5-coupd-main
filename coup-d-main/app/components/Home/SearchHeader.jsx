@@ -35,7 +35,7 @@ export default function SearchHeader({
         <Text style={styles.title}>Que recherchez-vous ?</Text>
         <View style={styles.row}>
           <TouchableOpacity style={[styles.typeBtn, { bg: '#E1F5FE' }]} onPress={() => { setFilterType('offer'); setStep(2); }}>
-            <Text style={styles.btnTxt}>🤝 Offres</Text>
+            <Text style={styles.btnTxt}>🤝 Propositions</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.typeBtn, { bg: '#FFF3E0' }]} onPress={() => { setFilterType('request'); setStep(2); }}>
             <Text style={styles.btnTxt}>🙏 Demandes</Text>
