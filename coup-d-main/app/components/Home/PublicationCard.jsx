@@ -1,9 +1,14 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
-import { PUB_STATES } from "../../constants/states";
+import { PUB_STATES, PUB_LABELS } from "../../constants/states";
 
 export default function PublicationCard({ item, onPress, hideAction = false }) {
   const isOpen = item.state === PUB_STATES.OPEN;
+  const STATE_STYLES = {
+    open: styles.ongoing,
+    finished: styles.finished,
+  };
+
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
@@ -15,9 +20,8 @@ export default function PublicationCard({ item, onPress, hideAction = false }) {
           </Text>
           
           {/* LOGIQUE MISE À JOUR : On utilise item.state */}
-          <View style={[styles.statePill, styles.ongoing]}>
-             {/* Puisqu'on affiche que les open, c'est forcément "En cours" */}
-            <Text style={styles.stateText}>En cours</Text>
+          <View style={[styles.statePill, STATE_STYLES[item.state]]}>
+            <Text style={styles.stateText}>{PUB_LABELS[item.state]}</Text>
           </View>
         </View>
 
@@ -68,6 +72,6 @@ const styles = StyleSheet.create({
   statePill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   stateText: { color: '#fff', fontSize: 12, fontWeight: '600' },
   
-  finished: { backgroundColor: '#2ecc71' }, 
-  ongoing: { backgroundColor: '#f39c12' }, // Orange pour l'état Open/En cours
+  finished: { backgroundColor: '#f39c12' }, 
+  ongoing: { backgroundColor: '#2ecc71' }, // Orange pour l'état Open/En cours
 });
