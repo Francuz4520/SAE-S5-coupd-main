@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { View, FlatList, StyleSheet, Keyboard } from "react-native";
+import { View, FlatList, StyleSheet, Keyboard, Platform } from "react-native";
 import { usePublications } from "../hooks/usePublications";
 import SearchHeader from "../components/Home/SearchHeader";
 import PublicationCard from "../components/Home/PublicationCard";
@@ -17,6 +17,9 @@ export default function HomeScreen({ navigation }) {
   const [filterAddress, setFilterAddress] = useState("");
   const [filterCategory, setFilterCategory] = useState(null);
   const [searchText, setSearchText] = useState("");
+
+  // Plateforme Desktop ?
+  const isDesktop = Platform.OS === "web";
   
   // État pour stocker les filtres appliqués
   const [appliedFilters, setAppliedFilters] = useState(null);
@@ -85,7 +88,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* HEADER DÉLÉGUÉ */}
-      <View style={[styles.header, searchStep > 0 && styles.headerExpanded]}>
+      <View style={[styles.header, searchStep > 0 && styles.headerExpanded, isDesktop && styles.headerDesktop]}>
         <SearchHeader 
           step={searchStep}
           setStep={setSearchStep}
@@ -132,4 +135,5 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
   },
   headerExpanded: { paddingBottom: 20 },
+  headerDesktop: {paddingTop: 0,},
 });

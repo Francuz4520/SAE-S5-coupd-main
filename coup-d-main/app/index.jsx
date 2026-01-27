@@ -15,8 +15,12 @@ import Cgu from "./screens/Cgu"
 import EditProfile from "./screens/EditProfile";
 import ChatScreen from './screens/Chat';
 import AvatarPicker from './screens/AvatarPicker';
+import HomeNavigator from './navigation/HomeNavigator'
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
+
+import AppLayout from './layouts/AppLayout'
+import Tabs from './navigation/Tabs'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -33,80 +37,19 @@ const app = initializeApp(firebaseConfig);
 
 
 const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
-
-const Tabs = () => {
-  return (
-    <Tab.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: '#29AAAB',}}>
-
-      <Tab.Screen 
-        name="Accueil" 
-        component={HomeScreen} 
-        options={{
-          tabBarIcon: ({ size }) => (
-            useIsFocused() ?
-              <Image source={require('../assets/icons/tabs/home-active.png')} alt='home-active-icon' style={{ width: size, height: size }} />
-            :
-              <Image source={require('../assets/icons/tabs/home-inactive.png')} alt='home-inactive-icon' style={{ width: size, height: size }} />
-          ),
-        }}
-      />
-
-      <Tab.Screen 
-        name="Publier"
-        component={PublishScreen} 
-        options={{
-          tabBarIcon: ({ size }) => (
-            useIsFocused() ?
-              <Image source={require('../assets/icons/tabs/publish-active.png')} alt='publish-active-icon' style={{ width: size, height: size }} />
-            :
-              <Image source={require('../assets/icons/tabs/publish-inactive.png')} alt='publish-inactive-icon' style={{ width: size, height: size }} />
-          ),
-        }}
-      />
-
-      <Tab.Screen 
-        name="Messages"
-        component={MessagesScreen} 
-        options={{
-          tabBarIcon: ({ size }) => (
-            useIsFocused() ?
-              <Image source={require('../assets/icons/tabs/messages-active.png')} alt='messages-active-icon' style={{ width: size, height: size }} />
-            :
-              <Image source={require('../assets/icons/tabs/messages-inactive.png')} alt='messages-inactive-icon' style={{ width: size, height: size }} />
-          ),
-        }}
-      />
-
-      <Tab.Screen 
-        name="Profil"
-        component={ProfileScreen} 
-        options={{
-          tabBarIcon: ({ size }) => (
-            useIsFocused() ?
-              <Image source={require('../assets/icons/tabs/profile-active.png')} alt='profile-active-icon' style={{ width: size, height: size }} />
-            :
-              <Image source={require('../assets/icons/tabs/profile-inactive.png')} alt='profile-inactive-icon' style={{ width: size, height: size }} />
-          ),
-        }}
-      />
-
-    </Tab.Navigator>
-  );
-}
 
 export default function Index() {
   return (
-    <Stack.Navigator initialRouteName="Splash" screenOptions={{headerShown: false}}>
-      <Stack.Screen name="Splash" component={SplashScreen}/>
-      <Stack.Screen name="Connection" component={Connection}/>
-      <Stack.Screen name="Registration" component={Registration}/>
-      <Stack.Screen name="AvatarPicker" component={AvatarPicker}/>
-      <Stack.Screen name="Home" component={Tabs}/>
-      <Stack.Screen name="EditProfile" component={EditProfile}/>
-      <Stack.Screen name="HomeDetails" component={HomeDetails}/>
-      <Stack.Screen name="Cgu" component={Cgu}/>
-      <Stack.Screen name="Chat" component={ChatScreen}/>
-    </Stack.Navigator>
+      <Stack.Navigator initialRouteName="Splash" screenOptions={{headerShown: false}}>
+        <Stack.Screen name="Splash" component={SplashScreen}/>
+        <Stack.Screen name="Connection" component={Connection}/>
+        <Stack.Screen name="Registration" component={Registration}/>
+        <Stack.Screen name="AvatarPicker" component={AvatarPicker}/>
+        <Stack.Screen name="Home" component={HomeNavigator}/>
+        <Stack.Screen name="EditProfile" component={EditProfile}/>
+        <Stack.Screen name="HomeDetails" component={HomeDetails}/>
+        <Stack.Screen name="Cgu" component={Cgu}/>
+        <Stack.Screen name="Chat" component={ChatScreen}/>
+      </Stack.Navigator>
   );
 }

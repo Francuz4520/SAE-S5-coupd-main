@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, FlatList, TouchableOpacity, Platform } from "react-native";
 import { useEffect, useState } from "react";
 import { listenUserConversations, getUserDocument } from "../api/firestoreService";
 import { getAuth} from "firebase/auth";
@@ -9,6 +9,7 @@ export default function MessagesScreen({ navigation }) {
   const [conversations, setConversations] = useState([]);
   const [usersMap, setUsersMap] = useState({}); // { userId: userData }
   const [currentUserId, setCurrentUserId] = useState(null);
+  const isDesktop = Platform.OS === 'web';
 
   useEffect(() => {
     async function fetchConversations() { 
@@ -108,9 +109,10 @@ export default function MessagesScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {!isDesktop &&
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Messages</Text>
-      </View>
+      </View>}
       {usersMap && conversations ? (
         <FlatList
           data={conversations}

@@ -4,7 +4,8 @@ import {
     StyleSheet,
     TouchableOpacity,
     FlatList,
-    Alert
+    Alert,
+    Platform,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { useIsFocused, CommonActions } from '@react-navigation/native';
@@ -25,6 +26,7 @@ export default function ProfileScreen({ navigation }) {
     const [publications, setPublications] = useState([]);
     const [loadingPubs, setLoadingPubs] = useState(true);
     const isFocused = useIsFocused();
+    const isDesktop = Platform.OS === 'web';
 
     useEffect(() => {
         let unsub;
@@ -127,8 +129,9 @@ export default function ProfileScreen({ navigation }) {
         <View style={{ flex: 1 }}>
 
             {/* HEADER FIXE */}
+            {!isDesktop && 
             <Banner text="Profil" showBack={false} />
-
+            }
             <View style={styles.profileRow}>
                 <DefaultAvatar avatarKey={user.avatarKey} size={100} />
                 <View style={styles.infoContainer}>

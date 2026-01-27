@@ -93,7 +93,7 @@ const Chip = ({ label, active, onPress }) => (
 const styles = StyleSheet.create({
   searchBox: { backgroundColor: "white", padding: 12, borderRadius: 15, flexDirection: "row", alignItems: "center" },
   placeholderText: { color: "#888" },
-  panel: { width: '100%' },
+  panel: { width: '100%'},
   title: { color: 'white', fontWeight: 'bold', fontSize: 18, marginBottom: 15 },
   row: { flexDirection: 'row', justifyContent: 'space-between' },
   typeBtn: { flex: 0.48, padding: 15, borderRadius: 12, alignItems: 'center', backgroundColor: 'white' }, 

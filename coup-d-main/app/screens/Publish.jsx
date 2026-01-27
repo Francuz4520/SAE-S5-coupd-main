@@ -22,6 +22,7 @@ export default function PublishScreen(){
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [imageUri, setImageUri] = useState(null);
+  const isDesktop = Platform.OS === 'web';
 
   function validate() {
     const newErrors = {}
@@ -130,9 +131,11 @@ return (
     >
       <View style={styles.container}>
         {/* Bandeau titre */}
+        {!isDesktop &&
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Publier</Text>
-        </View>
+        </View>}
+        
 
         <ScrollView
           style={styles.content}
