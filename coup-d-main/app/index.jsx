@@ -19,7 +19,6 @@ import HomeNavigator from './navigation/HomeNavigator'
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 
-import AppLayout from './layouts/AppLayout'
 import Tabs from './navigation/Tabs'
 
 // Your web app's Firebase configuration
