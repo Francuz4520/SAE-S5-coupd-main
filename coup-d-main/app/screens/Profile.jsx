@@ -13,6 +13,7 @@ import { auth } from "../api/Firestore";
 import { getUserDocument } from "../api/firestoreService";
 import Banner from "@/app/components/Banner";
 import PublicationCard from '@/app/components/Home/PublicationCard';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { formatDate } from '../utils/date';
@@ -125,6 +126,11 @@ export default function ProfileScreen({ navigation }) {
         );
     }
 
+    const rep = user.reputation || {};
+    const repCount = Number(rep.count || 0);
+    const repOverall = repCount > 0 ? Number(rep.sumOverall || 0) / repCount : 0;
+    const stars = Math.round(repOverall);
+
     return (
         <View style={{ flex: 1 }}>
 
@@ -137,6 +143,27 @@ export default function ProfileScreen({ navigation }) {
                 <View style={styles.infoContainer}>
                     <Text style={styles.username}>{user.username}</Text>
                     {user.city && <Text>{user.city}</Text>}
+                    <View style={styles.reputationRow}>
+                        {repCount > 0 ? (
+                            <>
+                                <View style={styles.starsRow}>
+                                    {[1, 2, 3, 4, 5].map((i) => (
+                                        <MaterialCommunityIcons
+                                            key={i}
+                                            name={i <= stars ? "star" : "star-outline"}
+                                            size={18}
+                                            color={i <= stars ? "#f1c40f" : "#c7c7c7"}
+                                        />
+                                    ))}
+                                </View>
+                                <Text style={styles.reputationText}>
+                                    {repOverall.toFixed(1)}/5 ({repCount} avis)
+                                </Text>
+                            </>
+                        ) : (
+                            <Text style={styles.reputationText}>Aucun avis</Text>
+                        )}
+                    </View>
                 </View>
             </View>
 
@@ -205,6 +232,20 @@ const styles = StyleSheet.create({
     },
     infoContainer: {
         flexDirection: "column",
+    },
+    reputationRow: {
+        marginTop: 6,
+        flexDirection: "row",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: 6,
+    },
+    starsRow: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    reputationText: {
+        color: "#555",
     },
     username: {
         fontSize: 22,

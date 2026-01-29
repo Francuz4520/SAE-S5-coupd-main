@@ -16,10 +16,9 @@ import EditProfile from "./screens/EditProfile";
 import ChatScreen from './screens/Chat';
 import AvatarPicker from './screens/AvatarPicker';
 import HomeNavigator from './navigation/HomeNavigator'
+import RateHelpScreen from './screens/RateHelp';
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-
-import Tabs from './navigation/Tabs'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -49,6 +48,7 @@ export default function Index() {
         <Stack.Screen name="HomeDetails" component={HomeDetails}/>
         <Stack.Screen name="Cgu" component={Cgu}/>
         <Stack.Screen name="Chat" component={ChatScreen}/>
+        <Stack.Screen name="RateHelp" component={RateHelpScreen}/>
       </Stack.Navigator>
   );
 }

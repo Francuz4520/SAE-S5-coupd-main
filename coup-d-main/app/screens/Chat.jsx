@@ -2,7 +2,7 @@ import { View, Image, Text, StyleSheet, KeyboardAvoidingView, TextInput, Touchab
 import { useEffect, useState, useRef } from "react";
 import Banner from "../components/Banner";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getConversationDocument, getConversationDocumentByParticipants, getUserDocument, listenMessagesForConversation, createConversationDocument, sendMessageToConversation, updatePublicationState, listenPublication } from "../api/firestoreService";
+import { getConversationDocument, getConversationDocumentByParticipants, getUserDocument, listenMessagesForConversation, createConversationDocument, sendMessageToConversation, updatePublicationState, listenPublication, getReviewForPublication } from "../api/firestoreService";
 import { getAuth } from "firebase/auth";
 import { PUB_LABELS, PUB_STATES } from "../constants/states";
 
@@ -17,6 +17,8 @@ export default function ChatScreen({navigation, route}) {
     const [publication, setPublication] = useState(null);
     const [activePubId, setActivePubId] = useState(publicationID || null);
     const [inputText, setInputText] = useState("");
+    const [reviewExists, setReviewExists] = useState(false);
+    const [isCheckingReview, setIsCheckingReview] = useState(false);
 
     useEffect(() => {
         async function loadUsers() {
@@ -52,6 +54,33 @@ export default function ChatScreen({navigation, route}) {
 
         return () => unsubscribe();
     }, [activePubId]);
+
+    useEffect(() => {
+        async function checkReview() {
+            if (!publication) return;
+            if (publication.state !== PUB_STATES.FINISHED) {
+                setReviewExists(false);
+                setIsCheckingReview(false);
+                return;
+            }
+            if (!currentUserID) return;
+
+            const toUserId = chatMembers?.[0]?.id;
+            if (!toUserId) return;
+
+            try {
+                setIsCheckingReview(true);
+                const existing = await getReviewForPublication(publication.id, currentUserID, toUserId);
+                setReviewExists(!!existing);
+            } catch (e) {
+                console.error("Erreur checkReview:", e);
+            } finally {
+                setIsCheckingReview(false);
+            }
+        }
+
+        checkReview();
+    }, [publication?.id, publication?.state, currentUserID, chatMembers?.[0]?.id]);
 
     useEffect(() => {
         if (!currentUserID) return;
@@ -95,7 +124,6 @@ export default function ChatScreen({navigation, route}) {
         loadConversation();
     }, [currentUserID, conversationID, newChat]);
 
-
     useEffect(() => {
         if (newChat) return;
         if (!conversationId) return;
@@ -118,26 +146,26 @@ export default function ChatScreen({navigation, route}) {
             let systemMsg = "";
             switch (nextState) {
                 case PUB_STATES.WAITING_FOR_ACCEPTANCE:
-                    systemMsg = "📢 L'auteur souhaite valider l'échange avec vous.";
+                    systemMsg = " L'auteur souhaite valider l'échange avec vous.";
                     break;
                 case PUB_STATES.IN_PROGRESS:
-                    systemMsg = "🤝 Accord confirmé ! L'échange/mission commence maintenant.";
+                    systemMsg = " Accord confirmé ! L'échange/mission commence maintenant.";
                     break;
                 case PUB_STATES.WAITING_FOR_VALIDATION:
-                    systemMsg = "🏁 L'interlocuteur indique que tout est terminé. En attente de validation finale.";
+                    systemMsg = " L'interlocuteur indique que tout est terminé. En attente de validation finale.";
                     break;
                 case PUB_STATES.DISPUTE:
-                    systemMsg = "⚠️ ALERTE : Un problème a été signalé par l'auteur sur le déroulement de l'échange.";
+                    systemMsg = " ALERTE : Un problème a été signalé par l'auteur sur le déroulement de l'échange.";
                     break;
                 case PUB_STATES.FINISHED:
                     if (publication.state === PUB_STATES.DISPUTE) {
-                        systemMsg = "✅ Le litige est marqué comme résolu. L'échange est clôturé.";
+                        systemMsg = " Le litige est marqué comme résolu. L'échange est clôturé.";
                     } else {
-                        systemMsg = "✅ L'échange est validé et terminé avec succès.";
+                        systemMsg = " L'échange est validé et terminé avec succès.";
                     }
                     break;
                 default:
-                    systemMsg = `📢 Nouveau statut : ${PUB_LABELS[nextState]}`;
+                    systemMsg = ` Nouveau statut : ${PUB_LABELS[nextState]}`;
             }
             sendMessageToConversation(conversationId, currentUserID, systemMsg, "system");
         }
@@ -197,6 +225,8 @@ export default function ChatScreen({navigation, route}) {
         const state = publication.state;
 
         const isDispute = state === PUB_STATES.DISPUTE;
+        const canRate = state === PUB_STATES.FINISHED && chatMembers?.[0]?.id && currentUserID;
+        const toUser = chatMembers?.[0] || null;
 
         return (
             <View style={styles.pubCard}>
@@ -248,7 +278,7 @@ export default function ChatScreen({navigation, route}) {
                             onPress={() => handleStateChange(PUB_STATES.DISPUTE)} 
                             style={[styles.actionButton, styles.redBtn, { marginRight: 5 }]}
                         >
-                            <Text style={styles.buttonTextSmall}>⚠️ Signaler</Text>
+                            <Text style={styles.buttonTextSmall}> Signaler</Text>
                         </TouchableOpacity>
 
                         {/* Bouton Valider */}
@@ -283,6 +313,36 @@ export default function ChatScreen({navigation, route}) {
                      <View style={[styles.statusBadge, styles.badgeDispute]}>
                         <Text style={[styles.statusText, styles.textDispute]}>Action requise !</Text>
                      </View>
+                )}
+
+                {canRate && !reviewExists && (
+                    <TouchableOpacity
+                        onPress={() =>
+                            navigation.navigate("RateHelp", {
+                                publicationId: publication.id,
+                                publicationTitle: publication.title,
+                                fromUserId: currentUserID,
+                                toUserId: toUser.id,
+                                toUserName:
+                                    `${toUser.firstname || ""} ${toUser.lastname || ""}`.trim() ||
+                                    toUser.username ||
+                                    "Utilisateur",
+                            })
+                        }
+                        style={[styles.actionButton, styles.tealBtn]}
+                        disabled={isCheckingReview}
+                        activeOpacity={0.85}
+                    >
+                        <Text style={styles.buttonTextSmall}>
+                            {isCheckingReview ? "Chargement..." : "Évaluer l'entraide"}
+                        </Text>
+                    </TouchableOpacity>
+                )}
+
+                {canRate && reviewExists && (
+                    <View style={styles.statusBadge}>
+                        <Text style={styles.statusText}>Avis déjà envoyé</Text>
+                    </View>
                 )}
             </View>
         );
@@ -384,6 +444,7 @@ const styles = StyleSheet.create({
     },
     greenBtn: { backgroundColor: '#28a745' },
     blueBtn: { backgroundColor: '#007bff' },
+    tealBtn: { backgroundColor: '#29AAAB' },
     actionRow: {
         flexDirection: 'row',
         alignItems: 'center',

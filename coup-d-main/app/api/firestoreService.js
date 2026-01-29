@@ -1,5 +1,5 @@
 import { db } from "./Firestore";
-import { getDoc , getDocs , doc, updateDoc, collection, query, where, onSnapshot, orderBy, setDoc, addDoc, serverTimestamp, deleteDoc, writeBatch} from "firebase/firestore";
+import { getDoc, getDocs, doc, updateDoc, collection, query, where, onSnapshot, orderBy, setDoc, addDoc, serverTimestamp, deleteDoc, writeBatch, increment } from "firebase/firestore";
 
 // --- USERS ---
 
@@ -8,9 +8,7 @@ export async function getUserDocument(uid) {
         const ref = doc(db, "users", uid);
         const snap = await getDoc(ref);
 
-        return snap.exists() ? { id: snap.id, ...snap.data()
-
-        } : null;
+        return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 
     } catch (error) {
         console.error("Erreur getUserDocument:", error);
@@ -25,6 +23,77 @@ export async function updateUserDocument(uid, fields) {
         return true;
     } catch (error) {
         console.error("Erreur updateUserDocument:", error);
+        throw error;
+    }
+}
+
+
+// --- REVIEWS / REPUTATION ---
+
+function getReviewDocId(publicationId, fromUserId, toUserId) {
+    return `${publicationId}_${fromUserId}_${toUserId}`;
+}
+
+export async function getReviewForPublication(publicationId, fromUserId, toUserId) {
+    try {
+        const reviewId = getReviewDocId(publicationId, fromUserId, toUserId);
+        const ref = doc(db, "reviews", reviewId);
+        const snap = await getDoc(ref);
+        return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+    } catch (error) {
+        console.error("Erreur getReviewForPublication:", error);
+        throw error;
+    }
+}
+
+export async function createReview({ publicationId, fromUserId, toUserId, ratings, comment = "" }) {
+    try {
+        const reviewId = getReviewDocId(publicationId, fromUserId, toUserId);
+        const reviewRef = doc(db, "reviews", reviewId);
+
+        const existing = await getDoc(reviewRef);
+        if (existing.exists()) {
+            const err = new Error("Review already exists");
+            err.code = "review/already-exists";
+            throw err;
+        }
+
+        const reliability = Number(ratings?.reliability ?? 0);
+        const quality = Number(ratings?.quality ?? 0);
+        const attitude = Number(ratings?.attitude ?? 0);
+        const communication = Number(ratings?.communication ?? 0);
+        const overall = (reliability + quality + attitude + communication) / 4;
+
+        const batch = writeBatch(db);
+        batch.set(reviewRef, {
+            publicationId,
+            fromUserId,
+            toUserId,
+            ratings: {
+                reliability,
+                quality,
+                attitude,
+                communication,
+                overall,
+            },
+            comment: comment?.trim?.() ? comment.trim() : "",
+            createdAt: serverTimestamp(),
+        });
+
+        const userRef = doc(db, "users", toUserId);
+        batch.update(userRef, {
+            "reputation.count": increment(1),
+            "reputation.sumReliability": increment(reliability),
+            "reputation.sumQuality": increment(quality),
+            "reputation.sumAttitude": increment(attitude),
+            "reputation.sumCommunication": increment(communication),
+            "reputation.sumOverall": increment(overall),
+        });
+
+        await batch.commit();
+        return { id: reviewId };
+    } catch (error) {
+        console.error("Erreur createReview:", error);
         throw error;
     }
 }
