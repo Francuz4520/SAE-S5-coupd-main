@@ -11,6 +11,7 @@ export default function ConnectionScreen({navigation}){
     const [errors, setErrors] = useState({})
     const [stayConnected, setStayConnected] = useState(false);
     const keyboard = useKeyboard();
+    const isDesktop = Platform.OS === "web";
     
 
     const firebaseErrors ={
@@ -70,7 +71,7 @@ export default function ConnectionScreen({navigation}){
     return(
         <KeyboardAvoidingView style={{ flex: 1 }}
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'} >
-            <View style={styles.container}>
+            <View style={[styles.container,isDesktop && styles.containerDesktop]}>
             <View> 
                 {!keyboard.keyboardShown && <Image style={styles.logo}source={require("../../assets/images/logo_coup-dmain.png")} />}
                 <Text style={styles.title}>Se connecter</Text>
@@ -84,10 +85,10 @@ export default function ConnectionScreen({navigation}){
                     <View style={styles.line}></View>
                 </View>
                 <Text>Email</Text>
-                <TextInput style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none" inputMode="email"/>
+                <TextInput style={[styles.input, isDesktop && styles.inputDesktop]} value={email} onChangeText={setEmail} autoCapitalize="none" inputMode="email"/>
                 {errors.email && <Text style={styles.textError}>{errors.email}</Text>}
                 <Text>Mot de passe</Text>
-                <TextInput style={styles.input} value={password} onChangeText={setPassword} autoCapitalize="none" secureTextEntry/>
+                <TextInput style={[styles.input, isDesktop && styles.inputDesktop]} value={password} onChangeText={setPassword} autoCapitalize="none" secureTextEntry/>
                 {errors.password && <Text style={styles.textError}>{errors.password}</Text>}
                 <Pressable onPress={forgottenPassword}>
                     <Text style={styles.link}>Mot de passe oublié ?</Text>
@@ -113,7 +114,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: "center",
-        paddingHorizontal: 40
+        paddingHorizontal: 40,
+    },
+    containerDesktop: {
+        width: "30%",
+        alignSelf: "center",
     },
     logo:{
         alignSelf: "center",
@@ -156,6 +161,9 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         backgroundColor: "white",
         marginBottom: 10
+    },
+    inputDesktop: {
+        padding: 10,
     },
     link:{
         textDecorationLine: "underline",

@@ -4,7 +4,6 @@ import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWith
 import { Checkbox } from 'expo-checkbox';
 import { doc, setDoc, getFirestore, loadBundle } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import triggerAutoComplete, {cityExists, normalizeCityName} from '../utils/handleCities';
 import {useSafeAreaInsets } from "react-native-safe-area-context";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,6 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Google from 'expo-auth-session/providers/google';
 import { auth } from "../config/firebase";
 import * as AuthSession from "expo-auth-session";
+import BirthDatePicker from '../components/Registration/BirthDatePicker';
+
 
 
 
@@ -22,40 +23,15 @@ export default function RegistrationScreen({route, navigation}){
     const [lastname, setLastname] = useState("");
     const [firstname, setFirstname] = useState("");
     const [username, setUsername] = useState("");
-    const [show, setShow] = useState(false);
     const [dateOfBirth, setDateOfBirth] = useState(null);
-    const [dateText, setDateText] = useState("");
     const [city, setCity] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [errors, setErrors] = useState({});
     const [cities, setCities] = useState([]);
     const [cgu, setCgu] = useState(false);
     const [stayConnected, setStayConnected] = useState(false);
-
-
-    const onChangeDate = (event, selectedDate) => {
-        setShow(false);
-
-        if (selectedDate) {
-            setDateText(selectedDate.toLocaleDateString())
-            setDateOfBirth(selectedDate);
-        }
-    };
-
-    function createDateWithText(text){
-        const parts = text.split("/");
-        if (parts.length === 3) {
-        const [day, month, year] = parts.map(Number);
-            if (day && month && year) {
-                const newDate = new Date(year, month - 1, day);
-                if (!isNaN(newDate)) {
-                    setDateOfBirth(newDate);
-                    return;
-                }
-            }
-        }
-        setDateOfBirth(null);
-    }
+    const isDesktop = Platform.OS === "web"
+    
     const firebaseErrors ={
         "auth/email-already-in-use": "Cette adresse e-mail est déjà utilisée.",
         "auth/invalid-email": "L'adresse e-mail n'est pas valide.",
@@ -186,10 +162,7 @@ export default function RegistrationScreen({route, navigation}){
             >
             <ScrollView
                 style={styles.container}
-                contentContainerStyle={{
-                paddingBottom: 20,   // PAS plus
-                paddingTop: 0,       // pas d’offset inutile
-                }}
+                contentContainerStyle={[styles.contentContainer, isDesktop && styles.contentContainerDesktop]}
                 keyboardShouldPersistTaps="always"
             >
                 <Image style={styles.logo}source={require("../../assets/images/logo_coup-dmain.png")} />
@@ -204,54 +177,36 @@ export default function RegistrationScreen({route, navigation}){
                     <View style={styles.line}></View>
                 </View>
                 <Text>Email<Text style={styles.mandatoryField}>*</Text></Text>
-                <TextInput style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none" inputMode="email"/>
+                <TextInput style={[styles.input, isDesktop && styles.inputDesktop]} value={email} onChangeText={setEmail} autoCapitalize="none" inputMode="email"/>
                 {errors.email && <Text style={styles.textError}>{errors.email}</Text>}
                 <Text>Mot de passe<Text style={styles.mandatoryField}>*</Text></Text>
-                <TextInput style={styles.input} value={password} onChangeText={setPassword} autoCapitalize="none" secureTextEntry/>
+                <TextInput style={[styles.input, isDesktop && styles.inputDesktop]} value={password} onChangeText={setPassword} autoCapitalize="none" secureTextEntry/>
                 {errors.password && <Text style={styles.textError}>{errors.password}</Text>}
                 
                 <Text>Nom<Text style={styles.mandatoryField}>*</Text></Text>
-                <TextInput style={styles.input} value={lastname} onChangeText={setLastname}/>
+                <TextInput style={[styles.input, isDesktop && styles.inputDesktop]} value={lastname} onChangeText={setLastname}/>
                 {errors.lastname && <Text style={styles.textError}>{errors.lastname}</Text>}
                 <Text>Prénom<Text style={styles.mandatoryField}>*</Text></Text>
-                <TextInput style={styles.input} value={firstname} onChangeText={setFirstname}/>
+                <TextInput style={[styles.input, isDesktop && styles.inputDesktop]} value={firstname} onChangeText={setFirstname}/>
                 {errors.firstname && <Text style={styles.textError}>{errors.firstname}</Text>}
                 <Text>Nom d'utilisateur<Text style={styles.mandatoryField}>*</Text></Text>
-                <TextInput style={styles.input} value={username} onChangeText={setUsername} autoCapitalize="none"/>
+                <TextInput style={[styles.input, isDesktop && styles.inputDesktop]} value={username} onChangeText={setUsername} autoCapitalize="none"/>
                 {errors.username && <Text style={styles.textError}>{errors.username}</Text>}
                 <Text>Date de naissance<Text style={styles.mandatoryField}>*</Text></Text>
-                <View>
-                    <TextInput style={styles.input} value={dateText} onChangeText={ (text) => {
-                        setDateText(text);
-                        createDateWithText(text);
-                    }}/>
-                    <Pressable style={styles.iconContainer}onPress={() => setShow(true)}>
-                        <Image style={styles.icon} source={require("../../assets/icons/calendar.png")}></Image>
-                    </Pressable>
-                </View>
-                
-                {show && (
-                <DateTimePicker
-                    value={dateOfBirth ?? new Date()}
-                    mode="date"
-                    display="default"
-                    onChange={onChangeDate}
-                />)}
-                
+
+                <BirthDatePicker value={dateOfBirth} onChange={setDateOfBirth}/>
                 {errors.dateOfBirth && <Text style={styles.textError}>{errors.dateOfBirth}</Text>}
+
                 <Text>Ville<Text style={styles.mandatoryField}>*</Text></Text>
-                <TextInput style={styles.input} value={city} onChangeText={(text) => {
+                <TextInput style={[styles.input, isDesktop && styles.inputDesktop]} value={city} onChangeText={(text) => {
                     setCity(text);
                     setCities(triggerAutoComplete(text));
                 }}/>
                 <CitySelector cities={cities} setCity={setCity} setCities={setCities}></CitySelector>
-                
-                
-                
-                
                 {errors.city && <Text style={styles.textError}>{errors.city}</Text>}
+
                 <Text>Numéro de téléphone</Text>
-                <TextInput style={styles.input} value={phoneNumber} onChangeText={setPhoneNumber} inputMode="tel"/>
+                <TextInput style={[styles.input, isDesktop && styles.inputDesktop]} value={phoneNumber} onChangeText={setPhoneNumber} inputMode="tel"/>
                 {errors.phoneNumber && <Text style={styles.textError}>{errors.phoneNumber}</Text>}
                 <View style={styles.blocCGU}>
                     <Checkbox style={styles.checkBox} value={cgu} onValueChange={setCgu}></Checkbox>
@@ -286,6 +241,14 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 40
+    },
+    contentContainer: {
+        paddingBottom: 20,   // PAS plus
+        paddingTop: 0,       // pas d’offset inutile
+    },
+    contentContainerDesktop: {
+        width: "30%",
+        alignSelf: "center",
     },
     logo:{
         alignSelf: "center",
@@ -327,6 +290,9 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         backgroundColor: "white",
         marginBottom: 10
+    },
+    inputDesktop: {
+        padding: 10,
     },
     link:{
         textDecorationLine: "underline",
