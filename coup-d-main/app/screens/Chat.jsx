@@ -146,26 +146,26 @@ export default function ChatScreen({navigation, route}) {
             let systemMsg = "";
             switch (nextState) {
                 case PUB_STATES.WAITING_FOR_ACCEPTANCE:
-                    systemMsg = " L'auteur souhaite valider l'échange avec vous.";
+                    systemMsg = "📢 L'auteur souhaite valider l'échange avec vous.";
                     break;
                 case PUB_STATES.IN_PROGRESS:
-                    systemMsg = " Accord confirmé ! L'échange/mission commence maintenant.";
+                    systemMsg = "🤝 Accord confirmé ! L'échange/mission commence maintenant.";
                     break;
                 case PUB_STATES.WAITING_FOR_VALIDATION:
-                    systemMsg = " L'interlocuteur indique que tout est terminé. En attente de validation finale.";
+                    systemMsg = "🏁 L'interlocuteur indique que tout est terminé. En attente de validation finale.";
                     break;
                 case PUB_STATES.DISPUTE:
-                    systemMsg = " ALERTE : Un problème a été signalé par l'auteur sur le déroulement de l'échange.";
+                    systemMsg = "⚠️ ALERTE : Un problème a été signalé par l'auteur sur le déroulement de l'échange.";
                     break;
                 case PUB_STATES.FINISHED:
                     if (publication.state === PUB_STATES.DISPUTE) {
-                        systemMsg = " Le litige est marqué comme résolu. L'échange est clôturé.";
+                        systemMsg = "✅ Le litige est marqué comme résolu. L'échange est clôturé.";
                     } else {
-                        systemMsg = " L'échange est validé et terminé avec succès.";
+                        systemMsg = "✅ L'échange est validé et terminé avec succès.";
                     }
                     break;
                 default:
-                    systemMsg = ` Nouveau statut : ${PUB_LABELS[nextState]}`;
+                    systemMsg = `📢 Nouveau statut : ${PUB_LABELS[nextState]}`;
             }
             sendMessageToConversation(conversationId, currentUserID, systemMsg, "system");
         }
@@ -278,7 +278,7 @@ export default function ChatScreen({navigation, route}) {
                             onPress={() => handleStateChange(PUB_STATES.DISPUTE)} 
                             style={[styles.actionButton, styles.redBtn, { marginRight: 5 }]}
                         >
-                            <Text style={styles.buttonTextSmall}> Signaler</Text>
+                            <Text style={styles.buttonTextSmall}>⚠️ Signaler</Text>
                         </TouchableOpacity>
 
                         {/* Bouton Valider */}
