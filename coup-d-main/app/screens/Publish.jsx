@@ -136,12 +136,14 @@ return (
           <Text style={styles.headerTitle}>Publier</Text>
         </View>}
         
-
         <ScrollView
           style={styles.content}
           contentContainerStyle={{ paddingBottom: 40 }}
           keyboardShouldPersistTaps="handled"
         >
+          <View style={styles.pageContent}>
+          {/* Titre pour desktop*/}
+          {isDesktop && <Text style={styles.title}>Ajouter une publication</Text>}
           {/* Type */}
           <Text style={styles.label}>Type</Text>
           <View style={styles.typeRow}>
@@ -253,6 +255,7 @@ return (
               {isLoading ? "Publication..." : "Publier"}
             </Text>
           </Pressable>  
+          </View>
         </ScrollView>
       </View>
     </KeyboardAvoidingView>
@@ -282,6 +285,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
+  },
+  pageContent: {
+    alignSelf: "center",
   },
   label: {
     fontWeight: "500",
@@ -389,6 +395,11 @@ const styles = StyleSheet.create({
     color: "red",
     marginBottom: 10,
   },
+  title: {
+    fontSize: 21,
+    fontWeight: "650",
+    marginBottom: 8,
+  }
 });
 
 

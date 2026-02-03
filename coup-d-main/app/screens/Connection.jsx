@@ -117,8 +117,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 40,
     },
     containerDesktop: {
-        width: "30%",
+        width: "100%",
         alignSelf: "center",
+        maxWidth: 500,
     },
     logo:{
         alignSelf: "center",

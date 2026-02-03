@@ -95,14 +95,22 @@ export default function ProfileScreen({ navigation }) {
     }, [isFocused]);
 
     const confirmSignout = () => {
-        Alert.alert(
-            'Confirmation',
-            'Voulez-vous vraiment vous déconnecter ?',
-            [
-                { text: 'Annuler', style: 'cancel' },
-                { text: 'Oui', onPress: signout },
-            ]
-        );
+        if(!isDesktop){ 
+            Alert.alert(
+                'Confirmation',
+                'Voulez-vous vraiment vous déconnecter ?',
+                [
+                    { text: 'Annuler', style: 'cancel' },
+                    { text: 'Oui', onPress: signout },
+                ]
+            );
+        }
+        else{
+            const confirmed = window.confirm("Voulez-vous vraiment vous déconnecter ?");
+            if (confirmed) {
+                signout();
+            }
+        }
     };
 
     async function signout() {

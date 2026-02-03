@@ -262,8 +262,9 @@ const styles = StyleSheet.create({
         paddingTop: 0,       // pas d’offset inutile
     },
     contentContainerDesktop: {
-        width: "30%",
+         width: "100%",
         alignSelf: "center",
+        maxWidth: 400,
     },
     logo:{
         alignSelf: "center",

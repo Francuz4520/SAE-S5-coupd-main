@@ -110,13 +110,15 @@ export default function HomeScreen({ navigation }) {
       <FlatList
         data={filteredData}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 50 }}
+        contentContainerStyle={{ paddingBottom: 50 , /*flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around'*/ }}
         // On passe la navigation au composant enfant
         renderItem={({ item }) => (
-          <PublicationCard 
-            item={item} 
-            onPress={() => navigation.navigate("HomeDetails", { publication: item })} 
-          />
+          <View style={styles.gridItem}>
+            <PublicationCard 
+              item={item} 
+              onPress={() => navigation.navigate("HomeDetails", { publication: item })} 
+            />
+          </View>
         )}
       />
     </View>
@@ -136,4 +138,5 @@ const styles = StyleSheet.create({
   },
   headerExpanded: { paddingBottom: 20 },
   headerDesktop: {paddingTop: 0,},
+  
 });
