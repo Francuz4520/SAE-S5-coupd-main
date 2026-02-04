@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { View, FlatList, StyleSheet, Keyboard, Platform } from "react-native";
+import { View, FlatList, StyleSheet, Keyboard, Platform, useWindowDimensions } from "react-native";
 import { usePublications } from "../hooks/usePublications";
 import SearchHeader from "../components/Home/SearchHeader";
 import PublicationCard from "../components/Home/PublicationCard";
@@ -17,6 +17,7 @@ export default function HomeScreen({ navigation }) {
   const [filterAddress, setFilterAddress] = useState("");
   const [filterCategory, setFilterCategory] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const { width } = useWindowDimensions();
 
   // Plateforme Desktop ?
   const isDesktop = Platform.OS === "web";
@@ -110,15 +111,13 @@ export default function HomeScreen({ navigation }) {
       <FlatList
         data={filteredData}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 50 , /*flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around'*/ }}
+        contentContainerStyle={[styles.flatlist, isDesktop && width > 775 && styles.flatlistDesktop]}
         // On passe la navigation au composant enfant
         renderItem={({ item }) => (
-          <View style={styles.gridItem}>
-            <PublicationCard 
-              item={item} 
-              onPress={() => navigation.navigate("HomeDetails", { publication: item })} 
-            />
-          </View>
+          <PublicationCard 
+            item={item} 
+            onPress={() => navigation.navigate("HomeDetails", { publication: item })} 
+          />
         )}
       />
     </View>
@@ -138,5 +137,12 @@ const styles = StyleSheet.create({
   },
   headerExpanded: { paddingBottom: 20 },
   headerDesktop: {paddingTop: 0,},
-  
+
+  flatlist:{
+    paddingBottom: 50 ,
+  },
+  flatlistDesktop: {
+    flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' 
+  },
+
 });

@@ -1,6 +1,9 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet, Platform, useWindowDimensions } from "react-native";
 import { PUB_STATES, PUB_LABELS } from "../../constants/states";
+
+
+
 
 export default function PublicationCard({ item, onPress, hideAction = false }) {
   const isOpen = item.state === PUB_STATES.OPEN;
@@ -8,11 +11,13 @@ export default function PublicationCard({ item, onPress, hideAction = false }) {
     open: styles.ongoing,
     finished: styles.finished,
   };
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && width > 775
 
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
-      <View style={styles.card}>
+    <TouchableOpacity style={[styles.btnCard , isDesktop && styles.btnCardDesktop]} onPress={onPress} activeOpacity={0.8}>
+      <View style={[styles.card , isDesktop && styles.cardDesktop]}>
         <View style={styles.headerRow}>
           <Text style={styles.type}>
             {item.isHelpRequest ? "Demande d'aide" : "Proposition"} ·{" "}
@@ -55,15 +60,24 @@ export default function PublicationCard({ item, onPress, hideAction = false }) {
 }
 
 const styles = StyleSheet.create({
+ 
+  btnCard:{
+    marginTop: 8, marginBottom: 5, marginHorizontal: 15,
+  },
+  btnCardDesktop: {
+    width: 350,
+  },
   card: {
-    backgroundColor: "white", borderRadius: 18, marginTop: 8, marginBottom: 5,
-    marginHorizontal: 15, padding: 15, borderWidth: 1, borderColor: "#D7EBF0",
+    backgroundColor: "white", borderRadius: 18, padding: 15, borderWidth: 1, borderColor: "#D7EBF0", 
+  },
+  cardDesktop: {
+    height: 287,
   },
   type: { color: "#0B8CBF", fontWeight: "bold" },
   date: { color: "#22788F", fontWeight: 'normal' },
   title: { marginTop: 5, marginBottom: 10, fontSize: 16 },
   image: { width: "100%", height: 130, borderRadius: 12, marginBottom: 10 },
-  footer:{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10 },
+  footer:{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10 , marginTop: 'auto'},
   category: { backgroundColor: "#E6EFEF", paddingVertical: 4, paddingHorizontal: 10, borderRadius: 12, marginRight: 8 },
   categoryText: { fontSize: 12, color: "#555" },
   button: { backgroundColor: "white", borderWidth: 1, borderColor: "#60B4E0", paddingVertical: 6, paddingHorizontal: 15, borderRadius: 10 },
