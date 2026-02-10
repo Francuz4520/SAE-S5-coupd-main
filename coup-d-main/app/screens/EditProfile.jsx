@@ -21,6 +21,7 @@ export default function EditProfile() {
     const [cities, setCities] = useState([]);
     const [show, setShow] = useState(false);
     const [errors, setErrors] = useState({});
+    const isDesktop = Platform.OS === "web"
 
     useEffect(() => {
         async function load() {
@@ -96,7 +97,15 @@ export default function EditProfile() {
         if (phoneNumber) fields.phoneNumber = phoneNumber;
         try {
             await updateUserDocument(current.uid, fields);
-            Alert.alert("Profil mis à jour", "Votre profil a bien été mis à jour.", [{ text: "OK", onPress: () => navigation.goBack() }]);
+            if(!isDesktop){
+                Alert.alert("Profil mis à jour", "Votre profil a bien été mis à jour.", [{ text: "OK", onPress: () => navigation.goBack() }]);
+            }
+            else{
+                const confirmed = window.confirm("Votre profil a bien été mis à jour.");
+                if (confirmed) {
+                    navigation.goBack();
+                }
+            }
         } catch (error) {
             Alert.alert("Erreur", "Impossible de mettre à jour le profil.");
             console.error(error);

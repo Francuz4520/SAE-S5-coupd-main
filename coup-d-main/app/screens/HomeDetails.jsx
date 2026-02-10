@@ -1,6 +1,6 @@
 
 import React, {useEffect, useState} from "react";
-import { View, ScrollView, StyleSheet, Alert } from "react-native";
+import { View, ScrollView, StyleSheet, Alert, Platform } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import DetailHeader from "../components/HomeDetails/DetailsHeader";
@@ -17,6 +17,7 @@ export default function HomeDetails({ route, navigation }) {
   // On récupère la donnée
   const { publication } = route.params;
   const [isOwner, setIsOwner] = useState(false);
+  const isDesktop = Platform.OS === 'web'
 
   useEffect(() => {
     async function checkIsOwner() {
@@ -37,7 +38,8 @@ export default function HomeDetails({ route, navigation }) {
   };
 
   const handleDelete = () => {
-    Alert.alert('Supprimer', 'Voulez-vous vraiment supprimer cette publication ?', [
+    if(!isDesktop){
+      Alert.alert('Supprimer', 'Voulez-vous vraiment supprimer cette publication ?', [
       { text: 'Annuler', style: 'cancel' },
       { text: 'Supprimer', style: 'destructive', onPress: async () => {
         try {
@@ -49,16 +51,44 @@ export default function HomeDetails({ route, navigation }) {
         }
       } }
     ]);
+    }
+    else{
+      const confirmed = window.confirm('Voulez-vous vraiment supprimer cette publication ?');
+      if(confirmed){
+        try {
+          deletePublication(publication.id);
+          navigation.goBack();
+        } catch (e) {
+          console.error(e);
+          window.alert('Erreur', "Impossible de supprimer la publication.");
+        }
+      }
+    }
+    
   };
 
   const handleFinish = async () => {
-    try {
-      await updatePublicationState(publication.id, PUB_STATES.FINISHED);
-      Alert.alert('Publication terminée', 'La publication a été marquée comme terminée.', [{ text: 'OK', onPress: () => navigation.goBack() }]);
-    } catch (e) {
-      console.error(e);
-      Alert.alert('Erreur', "Impossible de marquer la publication comme terminée.");
-    }
+    
+      try {
+        await updatePublicationState(publication.id, PUB_STATES.FINISHED);
+        if(!isDesktop){
+          Alert.alert('Publication terminée', 'La publication a été marquée comme terminée.', [{ text: 'OK', onPress: () => navigation.goBack() }]);
+        }
+        else{
+          window.alert('La publication a été marquée comme terminée.');
+          navigation.goBack();
+        }
+      } catch (e) {
+        console.error(e);
+        if(!isDesktop){
+          Alert.alert('Erreur', "Impossible de marquer la publication comme terminée.");
+        }
+        else{
+          window.alert('Impossible de marquer la publication comme terminée.');
+        }
+      }
+    
+    
   };
 
   return (

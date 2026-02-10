@@ -74,7 +74,6 @@ export default function PublishScreen(){
       Alert.alert("Connexion requise", "Vous devez être connecté pour publier.");
       return;
     }
-
     setIsLoading(true);
 
     try {
@@ -85,12 +84,14 @@ export default function PublishScreen(){
         const publicUrl = await uploadToImgBB(imageUri);
         if(!publicUrl){
           Alert.alert("Erreur", "L'upload de l'image a échoué");
+          console.log("Erreur d'upload de l'image")
           setIsLoading(false);
           return;
         }
+        console.log("upload de l'image réussi")
         imageUrl = publicUrl;
       }
-
+      
       const publication = {
         title: title.trim(),
         description: description.trim(),
@@ -103,8 +104,18 @@ export default function PublishScreen(){
       };
 
       await addDoc(collection(db, "publications"), publication);
-
-      Alert.alert("Publié ", "Votre annonce a bien été créée.");
+      if(!isDesktop){
+        Alert.alert("Publié ", "Votre annonce a bien été créée.");
+      }
+      else{
+        const confirmed = window.alert("Votre annonce a bien été créée.");
+        /*
+        if (confirmed) {
+            navigation.goBack();
+        }*/
+      }
+      
+    
 
       // 5. Reset du formulaire
       setCategoryId(null);

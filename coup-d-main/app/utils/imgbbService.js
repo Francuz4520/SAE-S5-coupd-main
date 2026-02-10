@@ -1,37 +1,43 @@
+import { Platform } from "react-native";
+
 const IMGBB_API_KEY = "0028f8969fb0e7dfad414e304f9ceccb";
 
 export const uploadToImgBB = async (imageUri) => {
   try {
-    // Création du formulaire
     const formData = new FormData();
 
-    // React Native a besoin de ces 3 champs (uri, name, type) pour comprendre qu'il s'agit d'un fichier.
-    formData.append("image", {
-      uri: imageUri,
-      name: "photo_upload.jpg", // Le nom n'importe peu pour ImgBB
-      type: "image/jpeg",
-    });
+    if (Platform.OS === "web") {
+      // Sur le web : convertir l’URI en Blob
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
 
-    // Envoi de la requête
-    // On passe la clé API en paramètre d'URL pour simplifier
-    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
-    const result = await response.json();
-
-    // Vérification et retour du lien
-    if (result.success) {
-      // On renvoie le champ 'url' qui est le lien DIRECT (.jpg)
-      return result.data.url;
+      formData.append("image", blob, "photo_upload.jpg");
     } else {
-      throw new Error("Échec de l'upload ImgBB");
+      // Sur mobile : garder l’objet RN
+      formData.append("image", {
+        uri: imageUri,
+        name: "photo_upload.jpg",
+        type: "image/jpeg",
+      });
     }
 
+    const response = await fetch(
+      `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,
+      {
+        method: "POST",
+        body: formData,
+        // ⚠️ important : ne pas définir Content-Type manuellement
+      }
+    );
+
+    const result = await response.json();
+    console.log("Résultat ImgBB:", result);
+
+    if (result.success) {
+      return result.data.url;
+    } else {
+      throw new Error(result.error?.message || "Échec de l'upload ImgBB");
+    }
   } catch (error) {
     console.error("Erreur upload ImgBB:", error);
     return null;

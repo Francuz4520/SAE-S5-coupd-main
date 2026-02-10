@@ -6,6 +6,7 @@ import {
     FlatList,
     Alert,
     Platform,
+    useWindowDimensions,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { useIsFocused, CommonActions } from '@react-navigation/native';
@@ -28,6 +29,7 @@ export default function ProfileScreen({ navigation }) {
     const [loadingPubs, setLoadingPubs] = useState(true);
     const isFocused = useIsFocused();
     const isDesktop = Platform.OS === 'web';
+    const { width } = useWindowDimensions();
 
     useEffect(() => {
         let unsub;
@@ -141,7 +143,6 @@ export default function ProfileScreen({ navigation }) {
 
     return (
         <View style={{ flex: 1 }}>
-
             {/* HEADER FIXE */}
             {!isDesktop && 
             <Banner text="Profil" showBack={false} />
@@ -211,7 +212,7 @@ export default function ProfileScreen({ navigation }) {
                         showsVerticalScrollIndicator={false}
                         nestedScrollEnabled
                         removeClippedSubviews
-                        contentContainerStyle={{ paddingBottom: 30 }}
+                        contentContainerStyle={[styles.flatlist, isDesktop && width > 775 && styles.flatlistDesktop]}
                         renderItem={({ item }) => (
                             <PublicationCard
                                 item={item}
@@ -295,5 +296,12 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontWeight: "700",
         marginBottom: 8,
+    },
+
+    flatlist:{
+        paddingBottom: 30 ,
+    },
+    flatlistDesktop: {
+        flexDirection: 'row', flexWrap: 'wrap', justifyContent: "center"
     },
 });
