@@ -1,10 +1,13 @@
-import { View, Image, Text, StyleSheet, KeyboardAvoidingView, TextInput, TouchableOpacity, Platform, FlatList  } from "react-native";
+import { View, Image, Text, StyleSheet, KeyboardAvoidingView, TextInput, TouchableOpacity, Platform, FlatList } from "react-native";
 import { useEffect, useState, useRef } from "react";
 import Banner from "../components/Banner";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getConversationDocument, getConversationDocumentByParticipants, getUserDocument, listenMessagesForConversation, createConversationDocument, sendMessageToConversation, updatePublicationState, listenPublication, getReviewForPublication } from "../api/firestoreService";
+import { useIsFocused } from "@react-navigation/native";
 import { getAuth } from "firebase/auth";
 import { PUB_LABELS, PUB_STATES } from "../constants/states";
+
+import DefaultAvatar from "../components/DefaultAvatar";
 
 export default function ChatScreen({navigation, route}) {
     
@@ -19,6 +22,7 @@ export default function ChatScreen({navigation, route}) {
     const [inputText, setInputText] = useState("");
     const [reviewExists, setReviewExists] = useState(false);
     const [isCheckingReview, setIsCheckingReview] = useState(false);
+    const isFocused = useIsFocused();
 
     useEffect(() => {
         async function loadUsers() {
@@ -57,6 +61,7 @@ export default function ChatScreen({navigation, route}) {
 
     useEffect(() => {
         async function checkReview() {
+            if (!isFocused) return;
             if (!publication) return;
             if (publication.state !== PUB_STATES.FINISHED) {
                 setReviewExists(false);
@@ -80,7 +85,7 @@ export default function ChatScreen({navigation, route}) {
         }
 
         checkReview();
-    }, [publication?.id, publication?.state, currentUserID, chatMembers?.[0]?.id]);
+    }, [publication?.id, publication?.state, currentUserID, chatMembers?.[0]?.id, isFocused]);
 
     useEffect(() => {
         if (!currentUserID) return;
@@ -172,6 +177,10 @@ export default function ChatScreen({navigation, route}) {
     };
 
     const chatMembersFullname = chatMembers.map(m => `${m.firstname} ${m.lastname}`).join(", ");
+    const otherMember = chatMembers?.[0] || null;
+
+    const otherName = otherMember ? (`${otherMember.firstname||""} ${otherMember.lastname||""}`.trim() || otherMember.username || "Utilisateur") : "Utilisateur";
+    const otherAvatarUri = otherMember?.photoURL || null;
 
     const handleSend = () => {
         if (inputText.trim().length === 0) return;
@@ -358,6 +367,29 @@ export default function ChatScreen({navigation, route}) {
                 <View style={styles.container}>
                     <Banner text={chatMembersFullname ? `Conversation avec ${chatMembersFullname}` : "Chargement..."} onBack={() => navigation.navigate("Home", {screen: "Messages"})} />
                     
+                    <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() =>
+                        otherMember?.id && navigation.navigate("PublicProfile", { userId: otherMember.id })
+                    }
+                    style={styles.chatProfileCard}
+                    >
+                    {otherAvatarUri ? (
+                        <Image source={{ uri: otherAvatarUri }} style={styles.chatProfileAvatarImg} />
+                    ) : (
+                        <DefaultAvatar avatarKey={otherMember?.avatarKey} size={46} />
+                    )}
+
+                    <View style={styles.chatProfileInfo}>
+                        <Text style={styles.chatProfileName} numberOfLines={1}>
+                        {otherName}
+                        </Text>
+                        <Text style={styles.chatProfileSub} numberOfLines={1}>
+                        Voir le profil
+                        </Text>
+                    </View>
+                    </TouchableOpacity>
+                    
                     <PublicationActionHeader />
 
                     <View style={{ flex: 1 }}>
@@ -412,7 +444,47 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#fff",
     },
-    
+    chatProfileCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.92)",
+
+    marginTop: 12,
+    marginHorizontal: 14,
+    marginBottom: 10,
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
+    },
+    chatProfileAvatarImg: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: "#eee",
+    },
+    chatProfileInfo: {
+    flex: 1,
+    minHeight: 46,
+    justifyContent: "center",
+    },
+    chatProfileName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111",
+    },
+    chatProfileSub: {
+    marginTop: 2,
+    fontSize: 12,
+    color: "#555",
+    },
     // Styles pour le bandeau de publication
      pubCard: {
         flexDirection: 'row',

@@ -17,6 +17,7 @@ import ChatScreen from './screens/Chat';
 import AvatarPicker from './screens/AvatarPicker';
 import HomeNavigator from './navigation/HomeNavigator'
 import RateHelpScreen from './screens/RateHelp';
+import PublicProfileScreen from './screens/PublicProfile';
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 
@@ -49,6 +50,7 @@ export default function Index() {
         <Stack.Screen name="Cgu" component={Cgu}/>
         <Stack.Screen name="Chat" component={ChatScreen}/>
         <Stack.Screen name="RateHelp" component={RateHelpScreen}/>
+        <Stack.Screen name="PublicProfile" component={PublicProfileScreen}/>
       </Stack.Navigator>
   );
 }

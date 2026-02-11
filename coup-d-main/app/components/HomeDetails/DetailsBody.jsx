@@ -1,7 +1,7 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
-export default function DetailBody({ title, category, date, description, city }) {
+export default function DetailBody({ title, category, date, description, city, authorName, onPressAuthor }) {
   return (
     <View style={styles.container}>
       {/* Ligne Catégorie & Date */}
@@ -11,6 +11,18 @@ export default function DetailBody({ title, category, date, description, city })
         </View>
         <Text style={styles.dateText}>{date}</Text>
       </View>
+
+      {!!authorName && (
+        <TouchableOpacity
+          onPress={onPressAuthor}
+          activeOpacity={0.8}
+          disabled={!onPressAuthor}
+          style={styles.authorRow}
+        >
+          <Text style={styles.authorLabel}>Posté par</Text>
+          <Text style={styles.authorValue}>{authorName}</Text>
+        </TouchableOpacity>
+      )}
       
       {/* Titre */}
       <Text style={styles.title}>{title}</Text>
@@ -39,6 +51,14 @@ const styles = StyleSheet.create({
   categoryBadge: { backgroundColor: "#E6EFEF", paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8 },
   categoryText: { color: "#22788F", fontWeight: "600", fontSize: 12 },
   dateText: { color: "#888", fontSize: 12 },
+  authorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+    gap: 6,
+  },
+  authorLabel: { color: "#888", fontSize: 12 },
+  authorValue: { color: "#22788F", fontSize: 12, fontWeight: "700" },
   title: { fontSize: 24, fontWeight: "bold", color: "#1a1a1a", marginBottom: 10 },
   divider: { height: 1, backgroundColor: "#F2F2F2", marginBottom: 15 },
   sectionTitle: { fontSize: 18, fontWeight: "600", color: "#333", marginBottom: 8 },
