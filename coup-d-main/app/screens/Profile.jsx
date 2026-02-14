@@ -175,28 +175,28 @@ export default function ProfileScreen({ navigation }) {
                     </View>
                 </View>
             </View>
+            <View style={isDesktop && styles.twoButtons}>
+                <TouchableOpacity
+                    style={[styles.editButton, isDesktop && styles.half]}
+                    onPress={() => navigation.navigate("EditProfile")}
+                >
+                    <Text style={styles.editButtonText}>
+                        Modifier mon profil
+                    </Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => navigation.navigate("EditProfile")}
-            >
-                <Text style={styles.editButtonText}>
-                    Modifier mon profil
-                </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-                style={styles.signoutButton}
-                onPress={confirmSignout}
-            >
-                <Text style={styles.signoutButtonText}>
-                    Se déconnecter
-                </Text>
-            </TouchableOpacity>
-
+                <TouchableOpacity
+                    style={[styles.signoutButton, isDesktop && styles.half]}
+                    onPress={confirmSignout}
+                >
+                    <Text style={styles.signoutButtonText}>
+                        Se déconnecter
+                    </Text>
+                </TouchableOpacity>
+            </View>
             {/* ZONE SCROLLABLE */}
             <View style={styles.listContainer}>
-                <Text style={styles.sectionTitle}>
+                <Text style={[styles.sectionTitle, isDesktop && styles.sectionTitleDesktop]}>
                     Mes publications
                 </Text>
 
@@ -297,11 +297,19 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         marginBottom: 8,
     },
-
+    sectionTitleDesktop: {
+        alignSelf: "center",
+    },
     flatlist:{
         paddingBottom: 30 ,
     },
     flatlistDesktop: {
         flexDirection: 'row', flexWrap: 'wrap', justifyContent: "center"
     },
+    twoButtons: {
+        flexDirection: "row", 
+    },
+    half: {
+        flex: 1,
+    }
 });

@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
 
 export default function DetailBody({ title, category, date, description, city, authorName, onPressAuthor }) {
+  const isDesktop = Platform.OS === 'web'
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
       {/* Ligne Catégorie & Date */}
       <View style={styles.metaRow}>
         <View style={styles.categoryBadge}>
@@ -40,12 +41,16 @@ export default function DetailBody({ title, category, date, description, city, a
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     marginTop: -20,
     backgroundColor: "white",
     minHeight: 500,
+  },
+  containerDesktop: {
+    marginTop: 0,
   },
   metaRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 },
   categoryBadge: { backgroundColor: "#E6EFEF", paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8 },

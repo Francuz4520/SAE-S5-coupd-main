@@ -9,6 +9,7 @@ import {
   Text,
   TouchableOpacity,
   Image,
+  useWindowDimensions,
 } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -29,6 +30,8 @@ export default function HomeDetails({ route, navigation }) {
   const [isOwner, setIsOwner] = useState(false);
   const [author, setAuthor] = useState(null);
   const isDesktop = Platform.OS === 'web'
+  const {width} = useWindowDimensions();
+  const isFinished = publication.state === PUB_STATES.FINISHED;
 
   useEffect(() => {
     async function checkIsOwner() {
@@ -149,13 +152,14 @@ export default function HomeDetails({ route, navigation }) {
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
+      <View style={isDesktop && styles.authorHeader}>
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() =>
             publication?.idUser &&
             navigation.navigate("PublicProfile", { userId: publication.idUser })
           }
-          style={styles.authorCard}
+          style={[styles.authorCard, styles.half]}
         >
           {authorAvatarUri ? (
             <Image source={{ uri: authorAvatarUri }} style={styles.authorAvatarImg} />
@@ -173,31 +177,65 @@ export default function HomeDetails({ route, navigation }) {
               </Text>
             ) : null}
           </View>
-        </TouchableOpacity>
+          
+         </TouchableOpacity>
+         {isDesktop &&  isOwner &&
+                 <View style={[styles.ownerRow, styles.half]}>
+                   <TouchableOpacity style={[styles.ownerButton, styles.deleteButton]} onPress={handleDelete} activeOpacity={0.8}>
+                     <Text style={styles.ownerButtonText}>Supprimer</Text>
+                   </TouchableOpacity>
+                   <TouchableOpacity
+                     style={[styles.ownerButton, isFinished ? styles.finishDisabled : styles.finishButton]}
+                     onPress={isFinished ? null : handleFinish}
+                     activeOpacity={0.8}
+                     disabled={isFinished}
+                   >
+                     <Text style={styles.ownerButtonText}>{isFinished ? 'Terminé' : 'Terminer'}</Text>
+                   </TouchableOpacity>
+                 </View>
+          }
+          {isDesktop &&  !isOwner &&
+         <TouchableOpacity 
+                style={[styles.actionButton, isFinished && styles.actionDisabled, styles.half]} 
+                onPress={isFinished ? null : handleActionPress}
+                activeOpacity={0.8}
+                disabled={isFinished}
+            >
+              <Text style={styles.actionButtonText}>
+                {isFinished ? "Publication terminée" : "Contacter"}
+              </Text>
+          </TouchableOpacity>
+          }
+        </View>
 
-        <DetailHero imageUri={publication.image} />
-        
-        <DetailBody 
-          title={publication.title}
-          category={publication.categoryTitle}
-          date={displayDate}
-          description={publication.description}
-          city={publication.authorCity}
-          authorName=""
-        />
+        <View style={isDesktop && width>750 && styles.rowContainer}>
+          <DetailHero imageUri={publication.image} style={styles.half}/>
+          
+          <DetailBody 
+            title={publication.title}
+            category={publication.categoryTitle}
+            date={displayDate}
+            description={publication.description}
+            city={publication.authorCity}
+            authorName=""
+            style={styles.half}
+          />
+        </View>
       </ScrollView>
 
       {/* 3. Action Fixe */}
-      <DetailFooter 
-        isHelpRequest={publication.isHelpRequest} 
-        onPress={handleActionPress}
-        isOwner={isOwner}
-        onDelete={handleDelete}
-        onFinish={handleFinish}
-        state={publication.state}
-      />
-      
+      {!isDesktop &&
+        <DetailFooter 
+          isHelpRequest={publication.isHelpRequest} 
+          onPress={handleActionPress}
+          isOwner={isOwner}
+          onDelete={handleDelete}
+          onFinish={handleFinish}
+          state={publication.state}
+        />
+      }
     </View>
+    
 
   );
 }
@@ -210,7 +248,10 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-
+  authorHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   authorCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -247,4 +288,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#555",
   },
+  rowContainer: {
+    flexDirection: "row",
+  },
+  half: {
+    flex: 1,
+  },
+  actionButton: {
+    backgroundColor: "#29AAAB",
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 14,
+    marginBottom: 10,
+    elevation: 5,
+    shadowColor: "#29AAAB",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  actionDisabled: {
+      backgroundColor: "#bdc3c7",
+      elevation: 0
+  },
+  actionButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+  ownerRow: { flexDirection: 'row', gap: 0 },
+  ownerButton: { flex: 1, borderRadius: 12, alignItems: 'center', justifyContent: "center", margin: 14, marginBottom: 10,},
+  deleteButton: { backgroundColor: '#e74c3c' },
+  finishButton: { backgroundColor: '#27ae60' },
+  finishDisabled: { backgroundColor: '#95a5a6' },
+  ownerButtonText: { color: 'white', fontWeight: '700' },
 });

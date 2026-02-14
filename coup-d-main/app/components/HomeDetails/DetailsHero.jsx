@@ -1,14 +1,16 @@
 import React, { useState, useRef } from "react";
-import {View, Image, StyleSheet, Dimensions, Modal, Pressable, Animated, Easing } from "react-native";
+import {View, Image, StyleSheet, Dimensions, Modal, Pressable, Animated, Easing, Platform, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-const { width, height } = Dimensions.get("window");
+/*const { width, height } = Dimensions.get("window");*/
+
 
 export default function DetailHero({ imageUri }) {
   const [zoomVisible, setZoomVisible] = useState(false);
-
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  const isDesktop = Platform.OS === 'web'
+  const {width, height} = useWindowDimensions();
 
   const openZoom = () => {
     setZoomVisible(true);
@@ -48,10 +50,10 @@ export default function DetailHero({ imageUri }) {
 
   if (imageUri) {
     return (
-      <>
+      <View style={{flex: 1}}>
         {/* IMAGE NORMALE */}
-        <Pressable onPress={openZoom}>
-          <Image source={{ uri: imageUri }} style={styles.image} />
+        <Pressable onPress={openZoom} style={{flex: 1}}>
+          <Image source={{ uri: imageUri }} style={[styles.image,{ width }, isDesktop && width> 750 && styles.imageDesktop]} />
         </Pressable>
 
         {/* MODAL AVEC ANIMATION */}
@@ -69,6 +71,8 @@ export default function DetailHero({ imageUri }) {
               style={[
                 styles.zoomImage,
                 {
+                   width: width * 0.85,
+                  height: height * 0.65,
                   transform: [
                     {
                       scale: scaleAnim.interpolate({
@@ -86,7 +90,7 @@ export default function DetailHero({ imageUri }) {
             </Pressable>
           </Animated.View>
         </Modal>
-      </>
+      </View>
     );
   }
 
@@ -99,10 +103,14 @@ export default function DetailHero({ imageUri }) {
 
 const styles = StyleSheet.create({
   image: {
-    width: width,
     height: 250,
     resizeMode: "contain",
     backgroundColor: "#f0f0f0",
+  },
+
+  imageDesktop: {
+    width: "100%",
+    height: "100%",
   },
 
   placeholder: {
@@ -118,8 +126,6 @@ const styles = StyleSheet.create({
   },
 
   zoomImage: {
-    width: width * 0.85,
-    height: height * 0.65,
     resizeMode: "contain",
   },
 
