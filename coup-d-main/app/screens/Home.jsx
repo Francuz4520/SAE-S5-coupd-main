@@ -3,6 +3,7 @@ import { View, FlatList, StyleSheet, Keyboard, Platform, useWindowDimensions } f
 import { usePublications } from "../hooks/usePublications";
 import SearchHeader from "../components/Home/SearchHeader";
 import PublicationCard from "../components/Home/PublicationCard";
+import AgentIAButton from "../components/Home/AgentIAButton";
 import { PUB_STATES } from "../constants/states";
 
 import { expandSearchTerm, matchSemantic } from "../utils/synonymsDict";
@@ -120,6 +121,10 @@ export default function HomeScreen({ navigation }) {
           />
         )}
       />
+
+      <View style={styles.buttonAIposition}>
+        <AgentIAButton setAppliedFilters={setAppliedFilters} />
+      </View>
     </View>
   );
 }
@@ -143,6 +148,13 @@ const styles = StyleSheet.create({
   },
   flatlistDesktop: {
     flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' 
+  },
+  buttonAIposition: {
+    position: 'absolute',
+    alignItems: 'flex-end',
+    right: 20,
+    bottom: 30,
+    zIndex: 100,
   },
 
 });
