@@ -48,3 +48,7 @@ app-example
 
 # private key firebase admin
 serviceAccountKey.json
+
+# Env variables
+.env
+.env.local

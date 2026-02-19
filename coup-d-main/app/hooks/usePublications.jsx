@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { collection, query, where, onSnapshot, getDoc, doc } from "firebase/firestore";
-import { db } from "../config/firebase";
+import { db } from "../api/Firestore";
 import { formatDate } from "../utils/date";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAuth } from "firebase/auth";

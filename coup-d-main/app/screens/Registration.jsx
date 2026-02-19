@@ -10,7 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import CitySelector from "../components/CitySelector"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Google from 'expo-auth-session/providers/google';
-import { auth } from "../config/firebase";
+import { auth } from "../api/Firestore";
 import * as AuthSession from "expo-auth-session";
 import BirthDatePicker from '../components/Registration/BirthDatePicker';
 

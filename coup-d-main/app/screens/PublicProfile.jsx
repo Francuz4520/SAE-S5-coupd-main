@@ -13,7 +13,7 @@ import Banner from "@/app/components/Banner";
 import PublicationCard from "@/app/components/Home/PublicationCard";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { db } from "../config/firebase";
+import { db } from "../api/Firestore";
 import { formatDate } from "../utils/date";
 import DefaultAvatar from "../components/DefaultAvatar";
 
