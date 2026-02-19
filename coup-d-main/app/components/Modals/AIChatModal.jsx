@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Modal, StyleSheet, TouchableOpacity, Image, TextInput, FlatList, KeyboardAvoidingView, Platform, Animated } from 'react-native';
 
+const IP_ADDRESS = Platform.OS === 'android' ? '192.168.1.11' : 'localhost';
+
 const TypingIndicator = () => {
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
@@ -67,7 +69,7 @@ export default function ChatModal({ visible, onClose, setAppliedFilters }) {
         setIsTyping(true);
 
         try {
-            const response = await fetch('http://192.168.1.11:5678/webhook-test/ia-request', {
+            const response = await fetch(`http://${IP_ADDRESS}:5678/webhook-test/ia-request`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: inputText }),
