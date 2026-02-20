@@ -17,7 +17,18 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.wimx.coupdmain"
+      "package": "com.wimx.coupdmain",
+      
+      "allowBackup": false,
+      
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "VIBRATE"
+      ]
     },
     "web": {
       "output": "static",
@@ -36,11 +47,28 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 29,
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "usesCleartextTraffic": false
+          }
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1563b38f-fcda-4a92-ae66-c5f95ae92c4d"
+      }
     }
   }
 }
